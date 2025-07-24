@@ -38,4 +38,10 @@ interface CounterDao {
 
     @Query("DELETE FROM counter")
     suspend fun clearAll()
+
+    @Query("SELECT * FROM counter WHERE dateTime >= :startOfDay AND dateTime < :endOfDay ORDER BY dateTime ASC")
+    fun getCountsForDateRange(startOfDay: LocalDateTime, endOfDay: LocalDateTime): Flow<List<CounterEntity>>
+
+    @Query("SELECT * FROM counter ORDER BY dateTime ASC")
+    fun getAllCountsOrdered(): Flow<List<CounterEntity>>
 }

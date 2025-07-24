@@ -6,8 +6,9 @@ import kotlinx.coroutines.flow.map
 import java.time.LocalDateTime
 import java.time.temporal.TemporalAdjusters
 
-class CounterRepository(private val counterDao: CounterDao) {
-
+class CounterRepository(
+    private val counterDao: CounterDao,
+) {
     suspend fun addCountForCurrentHour() {
         val now = LocalDateTime.now().withMinute(0).withSecond(0).withNano(0)
         counterDao.upsertCountForHour(now)

@@ -22,7 +22,7 @@ sealed class GraphType {
     ) : GraphType()
 
     data class All(
-        val graphData: Map<LocalDate, Int>,
+        val graphData: Map<YearMonth, Int>,
     ) : GraphType()
 }
 
@@ -45,82 +45,15 @@ class StatisticsViewModel(
     fun loadHourlyStats(date: LocalDate) {
         _uiState.value = StatisticsUiState.Loading
         // TODO: Implement actual data fetching from counterRepository
-        // viewModelScope.launch {
-        //     try {
-        //         val data = counterRepository.getHourlyStats(date)
-        //         _uiState.value = StatisticsUiState.Success(
-        //             graphType = GraphType.Hourly,
-        //             selectedDate = date,
-        //             selectedMonth = null,
-        //             graphData = data
-        //         )
-        //     } catch (e: Exception) {
-        //         _uiState.value = StatisticsUiState.Error(e)
-        //     }
-        // }
-        // For now, just simulate loading finished
-//        _uiState.value = StatisticsUiState.Success(
-//            graphType = GraphType.Hourly,
-//            selectedDate = date,
-//            selectedMonth = null,
-//            graphData = "Hourly data for $date"
-//        )
     }
 
     fun loadDailyStats(yearMonth: YearMonth) {
         _uiState.value = StatisticsUiState.Loading
         // TODO: Implement actual data fetching from counterRepository
-        // viewModelScope.launch {
-        //     try {
-        //         val data = counterRepository.getDailyStats(yearMonth)
-        //         _uiState.value = StatisticsUiState.Success(
-        //             graphType = GraphType.Daily,
-        //             selectedDate = null,
-        //             selectedMonth = yearMonth,
-        //             graphData = data
-        //         )
-        //     } catch (e: Exception) {
-        //         _uiState.value = StatisticsUiState.Error(e)
-        //     }
-        // }
-        // For now, just simulate loading finished
-//        _uiState.value = StatisticsUiState.Success(
-//            graphType = GraphType.Daily,
-//            selectedDate = null,
-//            selectedMonth = yearMonth,
-//            graphData = "Daily data for $yearMonth"
-//        )
     }
 
     fun loadMonthlyStats() {
         _uiState.value = StatisticsUiState.Loading
         // TODO: Implement actual data fetching from counterRepository
-        // viewModelScope.launch {
-        //     try {
-        //         val data = counterRepository.getMonthlyStats()
-        //         _uiState.value = StatisticsUiState.Success(
-        //             graphType = GraphType.Monthly,
-        //             selectedDate = null,
-        //             selectedMonth = null,
-        //             graphData = data
-        //         )
-        //     } catch (e: Exception) {
-        //         _uiState.value = StatisticsUiState.Error(e)
-        //     }
-        // }
-        // For now, just simulate loading finished
-//        _uiState.value = StatisticsUiState.Success(
-//            graphType = GraphType.Monthly,
-//            selectedDate = null,
-//            selectedMonth = null,
-//            graphData = "Monthly data"
-//        )
-    }
-
-    // Call one of the load functions initially, perhaps with a default
-    init {
-        // Example: Load hourly stats for today by default
-        // loadHourlyStats(LocalDate.now())
-        // Or leave it to the UI to trigger the first load
     }
 }
