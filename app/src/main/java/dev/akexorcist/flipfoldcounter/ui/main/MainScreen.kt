@@ -35,7 +35,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -47,6 +46,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import androidx.navigation3.runtime.NavBackStack
 import dev.akexorcist.flipfoldcounter.R
 import dev.akexorcist.flipfoldcounter.ui.component.AppCard
 import dev.akexorcist.flipfoldcounter.ui.navigation.Screen
@@ -55,7 +55,7 @@ import org.koin.androidx.compose.koinViewModel
 import java.text.NumberFormat
 
 @Composable
-fun MainRoute(backStack: SnapshotStateList<Any>) {
+fun MainRoute(backStack: NavBackStack) {
     val activity = LocalActivity.current
     val context = LocalContext.current
     val viewModel: MainViewModel = koinViewModel()
