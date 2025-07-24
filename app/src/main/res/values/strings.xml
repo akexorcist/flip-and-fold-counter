@@ -10,6 +10,8 @@
     <string name="main_routines_app_not_found">Samsung Routines app not found</string>
 
     <string name="instruction_topbar">Instruction</string>
+    <string name="instruction_button_open_routines">Open Routines</string>
+    <string name="instruction_button_close">Close</string>
 
     <string name="content_description_flip_fold_devices">Flip &amp; Fold Devices</string>
     <string name="content_description_summary_graph">Summary graph</string>
@@ -20,6 +22,18 @@
     <string name="shortcuts_short_label">Count on close</string>
     <string name="shortcuts_long_label">Counts on each time the screen is closed</string>
     <string name="shortcuts_disabled">Disabled</string>
+
+    <string name="instruction_step_1">Open Routines app and tap the + button at the top of the app.</string>
+    <string name="instruction_step_2">Tap the first green + button to add a condition for the Routine to work.</string>
+    <string name="instruction_step_3">Select \"Folding status\".</string>
+    <string name="instruction_step_4">Select \"Completely closed\" and tap Done to add the condition.</string>
+    <string name="instruction_step_5">Tap the last green + button to set up the action based on the condition.</string>
+    <string name="instruction_step_6">Select \"Apps\".</string>
+    <string name="instruction_step_7">Select \"Open an app or do an app action\".</string>
+    <string name="instruction_step_8">Select \"Count on close\" in the Flip &amp; Fold Counter app and tap \"Done\".</string>
+    <string name="instruction_step_9">Tap Save to create the Routine.</string>
+    <string name="instruction_step_10">Customize the name, color, and icon image of the Routine as you like, then tap \"Done\".</string>
+    <string name="instruction_step_11">You have successfully created the Routine for the Flip &amp; Fold Counter app.</string>
 
     <string name="preview_hello_world">Hello World</string>
     <string name="instruction_step">Instruction Step %d</string>

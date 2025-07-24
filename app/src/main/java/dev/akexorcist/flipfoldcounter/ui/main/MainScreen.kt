@@ -2,7 +2,6 @@ package dev.akexorcist.flipfoldcounter.ui.main
 
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.util.Log
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -17,7 +16,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.material3.Button
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -47,7 +47,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import dev.akexorcist.flipfoldcounter.CounterActivity
 import dev.akexorcist.flipfoldcounter.R
 import dev.akexorcist.flipfoldcounter.ui.component.AppCard
 import dev.akexorcist.flipfoldcounter.ui.navigation.Screen
@@ -64,12 +63,11 @@ fun MainRoute(backStack: SnapshotStateList<Any>) {
     val todayCount by viewModel.todayCount.collectAsState()
     val thisMonthCount by viewModel.thisMonthCount.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
-
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         if (!context.packageManager.isRoutinesAppAvailable()) {
-            scope.launch {
+            coroutineScope.launch {
                 snackbarHostState.showSnackbar(
                     message = context.getString(R.string.main_routines_app_not_found),
                     duration = SnackbarDuration.Indefinite,
@@ -89,25 +87,6 @@ fun MainRoute(backStack: SnapshotStateList<Any>) {
         onGitHubClick = {
             activity?.startActivity(Intent(Intent.ACTION_VIEW, "https://akexorcist.dev".toUri()))
         },
-        onAddCountClick = {
-            activity?.startActivity(Intent(activity, CounterActivity::class.java))
-//            viewModel.addCount()
-        },
-        onOpenRoutinesClick = {
-            activity?.let { context ->
-                val intent = Intent("com.samsung.android.app.routines.action.SETTINGS").apply {
-                    setPackage("com.samsung.android.app.routines")
-                    addCategory(Intent.CATEGORY_DEFAULT)
-                }
-                if (intent.resolveActivity(context.packageManager) != null) {
-                    context.startActivity(intent)
-                } else {
-                    scope.launch {
-                        snackbarHostState.showSnackbar(context.getString(R.string.main_routines_app_not_found))
-                    }
-                }
-            }
-        }
     )
 }
 
@@ -128,8 +107,6 @@ fun MainScreen(
     thisMonthCount: Int,
     onInstructionClick: () -> Unit,
     onGitHubClick: () -> Unit,
-    onAddCountClick: () -> Unit,
-    onOpenRoutinesClick: () -> Unit,
 ) {
     val numberFormat = remember { NumberFormat.getInstance() }
 
@@ -146,12 +123,13 @@ fun MainScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
                 .padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(Modifier.height(32.dp))
             Header()
-            Spacer(Modifier.height(64.dp))
+            Spacer(Modifier.height(48.dp))
             AppCard {
                 Column(
                     modifier = Modifier
@@ -237,13 +215,6 @@ fun MainScreen(
                 }
             }
             Spacer(Modifier.height(32.dp))
-            Button(onClick = onAddCountClick) {
-                Text(text = stringResource(R.string.button_count_me_in))
-            }
-            Spacer(Modifier.height(16.dp))
-            Button(onClick = onOpenRoutinesClick) {
-                Text(text = stringResource(R.string.button_open_routines))
-            }
         }
     }
 }
@@ -330,8 +301,6 @@ private fun MainScreenPreview() {
             thisMonthCount = 6572,
             onInstructionClick = {},
             onGitHubClick = {},
-            onAddCountClick = {},
-            onOpenRoutinesClick = {},
         )
     }
 }

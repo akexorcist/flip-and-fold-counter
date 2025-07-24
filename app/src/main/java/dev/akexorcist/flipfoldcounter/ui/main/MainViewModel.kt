@@ -6,9 +6,8 @@ import dev.akexorcist.flipfoldcounter.data.CounterRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 
-class MainViewModel(private val repository: CounterRepository) : ViewModel() {
+class MainViewModel(repository: CounterRepository) : ViewModel() {
 
     val totalCount: StateFlow<Int> = repository.observeTotalCount()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
@@ -18,10 +17,4 @@ class MainViewModel(private val repository: CounterRepository) : ViewModel() {
 
     val thisMonthCount: StateFlow<Int> = repository.observeCurrentMonthCount()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
-
-    fun addCount() {
-        viewModelScope.launch {
-            repository.addCountForCurrentHour()
-        }
-    }
 }
