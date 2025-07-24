@@ -2,7 +2,7 @@ package dev.akexorcist.flipfoldcounter.ui.statistics
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import dev.akexorcist.flipfoldcounter.data.StatisticsRepository // Updated import
+import dev.akexorcist.flipfoldcounter.data.StatisticsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,15 +16,21 @@ sealed class GraphType {
     data class Hourly(
         val date: LocalDate,
         val data: Map<LocalTime, Int>,
+        val max: Int,
+        val average: Int,
     ) : GraphType()
 
     data class Daily(
-        val yearMonth: YearMonth, // Changed from month: Month to yearMonth: YearMonth
+        val yearMonth: YearMonth,
         val data: Map<LocalDate, Int>,
+        val max: Int,
+        val average: Int,
     ) : GraphType()
 
-    data class Monthly( // Renamed from All
+    data class Monthly(
         val data: Map<YearMonth, Int>,
+        val max: Int,
+        val average: Int,
     ) : GraphType()
 }
 
@@ -38,7 +44,7 @@ sealed interface StatisticsUiState {
 }
 
 class StatisticsViewModel(
-    private val statisticsRepository: StatisticsRepository // Changed from CounterRepository
+    private val statisticsRepository: StatisticsRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<StatisticsUiState>(StatisticsUiState.Loading)
@@ -52,7 +58,16 @@ class StatisticsViewModel(
                     _uiState.value = StatisticsUiState.Error(exception)
                 }
                 .collect { dataMap ->
-                    _uiState.value = StatisticsUiState.Success(GraphType.Hourly(date = date, data = dataMap))
+                    val max = dataMap.values.maxOrNull() ?: 0
+                    val average = if (dataMap.isNotEmpty()) dataMap.values.average().toInt() else 0
+                    _uiState.value = StatisticsUiState.Success(
+                        GraphType.Hourly(
+                            date = date,
+                            data = dataMap,
+                            max = max,
+                            average = average
+                        )
+                    )
                 }
         }
     }
@@ -65,7 +80,16 @@ class StatisticsViewModel(
                     _uiState.value = StatisticsUiState.Error(exception)
                 }
                 .collect { dataMap ->
-                    _uiState.value = StatisticsUiState.Success(GraphType.Daily(yearMonth = yearMonth, data = dataMap))
+                    val max = dataMap.values.maxOrNull() ?: 0
+                    val average = if (dataMap.isNotEmpty()) dataMap.values.average().toInt() else 0
+                    _uiState.value = StatisticsUiState.Success(
+                        GraphType.Daily(
+                            yearMonth = yearMonth,
+                            data = dataMap,
+                            max = max,
+                            average = average
+                        )
+                    )
                 }
         }
     }
@@ -78,7 +102,15 @@ class StatisticsViewModel(
                     _uiState.value = StatisticsUiState.Error(exception)
                 }
                 .collect { dataMap ->
-                    _uiState.value = StatisticsUiState.Success(GraphType.Monthly(data = dataMap))
+                    val max = dataMap.values.maxOrNull() ?: 0
+                    val average = if (dataMap.isNotEmpty()) dataMap.values.average().toInt() else 0
+                    _uiState.value = StatisticsUiState.Success(
+                        GraphType.Monthly(
+                            data = dataMap,
+                            max = max,
+                            average = average
+                        )
+                    )
                 }
         }
     }
