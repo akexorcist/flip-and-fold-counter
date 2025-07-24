@@ -7,7 +7,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import dev.akexorcist.flipfoldcounter.R
-import dev.akexorcist.flipfoldcounter.ui.instruction.InstructionScreen
+import dev.akexorcist.flipfoldcounter.ui.instruction.InstructionRoute
 import dev.akexorcist.flipfoldcounter.ui.main.MainRoute
 
 sealed class Screen {
@@ -29,7 +29,7 @@ fun NavGraph() {
                 }
 
                 is Screen.Instruction -> NavEntry(key) {
-                    InstructionScreen(backStack)
+                    InstructionRoute(backStack)
                 }
 
                 else -> {

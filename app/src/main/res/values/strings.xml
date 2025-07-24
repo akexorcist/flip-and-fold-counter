@@ -7,11 +7,15 @@
     <string name="main_label_day">Today</string>
     <string name="main_label_month">This Month</string>
     <string name="main_error_unknown_route">Unknown route: %s</string>
+    <string name="main_routines_app_not_found">Samsung Routines app not found</string>
+
+    <string name="instruction_topbar">Instruction</string>
 
     <string name="content_description_flip_fold_devices">Flip &amp; Fold Devices</string>
     <string name="content_description_summary_graph">Summary graph</string>
     <string name="content_description_instruction">Instruction</string>
     <string name="content_description_source_code">Source code on GitHub</string>
+    <string name="content_description_back">Back</string>
 
     <string name="shortcuts_short_label">Count on close</string>
     <string name="shortcuts_long_label">Counts on each time the screen is closed</string>

@@ -1,6 +1,7 @@
 package dev.akexorcist.flipfoldcounter.ui.main
 
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.util.Log
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.Image
@@ -22,16 +23,22 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -44,18 +51,35 @@ import dev.akexorcist.flipfoldcounter.CounterActivity
 import dev.akexorcist.flipfoldcounter.R
 import dev.akexorcist.flipfoldcounter.ui.component.AppCard
 import dev.akexorcist.flipfoldcounter.ui.navigation.Screen
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import java.text.NumberFormat
 
 @Composable
 fun MainRoute(backStack: SnapshotStateList<Any>) {
     val activity = LocalActivity.current
+    val context = LocalContext.current
     val viewModel: MainViewModel = koinViewModel()
     val totalCount by viewModel.totalCount.collectAsState()
     val todayCount by viewModel.todayCount.collectAsState()
     val thisMonthCount by viewModel.thisMonthCount.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+
+    LaunchedEffect(Unit) {
+        if (!context.packageManager.isRoutinesAppAvailable()) {
+            scope.launch {
+                snackbarHostState.showSnackbar(
+                    message = context.getString(R.string.main_routines_app_not_found),
+                    duration = SnackbarDuration.Indefinite,
+                )
+            }
+        }
+    }
 
     MainScreen(
+        snackbarHostState = snackbarHostState,
         totalCount = totalCount,
         todayCount = todayCount,
         thisMonthCount = thisMonthCount,
@@ -70,26 +94,35 @@ fun MainRoute(backStack: SnapshotStateList<Any>) {
 //            viewModel.addCount()
         },
         onOpenRoutinesClick = {
-            activity?.let { activity ->
+            activity?.let { context ->
                 val intent = Intent("com.samsung.android.app.routines.action.SETTINGS").apply {
                     setPackage("com.samsung.android.app.routines")
                     addCategory(Intent.CATEGORY_DEFAULT)
                 }
-                if(intent.resolveActivity(activity.packageManager) != null) {
-                    activity.startActivity(intent)
+                if (intent.resolveActivity(context.packageManager) != null) {
+                    context.startActivity(intent)
                 } else {
-                    Log.e("Check", "Can't resolve activity")
+                    scope.launch {
+                        snackbarHostState.showSnackbar(context.getString(R.string.main_routines_app_not_found))
+                    }
                 }
-            } ?: run {
-                Log.e("Check", "Invalid activity")
             }
         }
     )
 }
 
+private fun PackageManager.isRoutinesAppAvailable(): Boolean {
+    val intent = Intent("com.samsung.android.app.routines.action.SETTINGS").apply {
+        setPackage("com.samsung.android.app.routines")
+        addCategory(Intent.CATEGORY_DEFAULT)
+    }
+    return intent.resolveActivity(this) != null
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
+    snackbarHostState: SnackbarHostState,
     totalCount: Int,
     todayCount: Int,
     thisMonthCount: Int,
@@ -101,6 +134,7 @@ fun MainScreen(
     val numberFormat = remember { NumberFormat.getInstance() }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             MainTopBar(
                 onInstructionClick = onInstructionClick,
@@ -290,6 +324,7 @@ private fun MainTopBar(
 private fun MainScreenPreview() {
     MaterialTheme {
         MainScreen(
+            snackbarHostState = remember { SnackbarHostState() },
             totalCount = 38271,
             todayCount = 231,
             thisMonthCount = 6572,
