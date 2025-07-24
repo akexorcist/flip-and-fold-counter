@@ -128,7 +128,7 @@ fun MainScreen(
                     verticalArrangement = Arrangement.Center,
                 ) {
                     Text(
-                        text = "All of the time",
+                        text = stringResource(R.string.main_label_all),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                     )
@@ -156,7 +156,7 @@ fun MainScreen(
                         verticalArrangement = Arrangement.Center,
                     ) {
                         Text(
-                            text = "Today",
+                            text = stringResource(R.string.main_label_day),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                         )
@@ -184,7 +184,7 @@ fun MainScreen(
                         verticalArrangement = Arrangement.Center,
                     ) {
                         Text(
-                            text = "This Month",
+                            text = stringResource(R.string.main_label_month),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             maxLines = 1,
@@ -204,11 +204,11 @@ fun MainScreen(
             }
             Spacer(Modifier.height(32.dp))
             Button(onClick = onAddCountClick) {
-                Text(text = "Count Me In!")
+                Text(text = stringResource(R.string.button_count_me_in))
             }
             Spacer(Modifier.height(16.dp))
             Button(onClick = onOpenRoutinesClick) {
-                Text(text = "Open Routines")
+                Text(text = stringResource(R.string.button_open_routines))
             }
         }
     }
@@ -222,11 +222,11 @@ private fun Header() {
                 .width(200.dp)
                 .wrapContentHeight(),
             painter = painterResource(R.drawable.ic_flip_fold_devices),
-            contentDescription = "Flip & Fold Devices",
+            contentDescription = stringResource(R.string.content_description_flip_fold_devices),
         )
         Spacer(Modifier.height(16.dp))
         Text(
-            text = "How often have you flipped/folded?",
+            text = stringResource(R.string.main_title),
             style = MaterialTheme.typography.bodyLarge,
             fontWeight = FontWeight.Medium,
         )
@@ -252,7 +252,7 @@ private fun MainTopBar(
                 Text(
                     modifier = Modifier.offset(y = 1.dp),
                     text = stringResource(R.string.app_name),
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                 )
                 Text(
@@ -266,19 +266,19 @@ private fun MainTopBar(
             IconButton(onClick = onGitHubClick) {
                 Icon(
                     painterResource(R.drawable.ic_graph),
-                    contentDescription = "Summary graph",
+                    contentDescription = stringResource(R.string.content_description_summary_graph),
                 )
             }
             IconButton(onClick = onInstructionClick) {
                 Icon(
                     painterResource(R.drawable.ic_instruction),
-                    contentDescription = "Instruction",
+                    contentDescription = stringResource(R.string.content_description_instruction),
                 )
             }
             IconButton(onClick = onGitHubClick) {
                 Icon(
                     painterResource(R.drawable.ic_github),
-                    contentDescription = "Source code on GitHub",
+                    contentDescription = stringResource(R.string.content_description_source_code),
                 )
             }
         }

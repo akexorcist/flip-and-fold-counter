@@ -9,6 +9,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import dev.akexorcist.flipfoldcounter.R
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -16,7 +18,7 @@ fun InstructionScreen(backStack: SnapshotStateList<Any>) {
     val pagerState = rememberPagerState(pageCount = { 4 })
     Column(modifier = Modifier.fillMaxSize()) {
         HorizontalPager(state = pagerState) {
-            Text(text = "Instruction Step $it")
+            Text(text = stringResource(R.string.instruction_step, it))
         }
     }
 }

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:icon="@mipmap/ic_launcher"
+        android:enabled="true"
+        android:shortcutId="close"
+        android:shortcutShortLabel="@string/shortcuts_short_label"
+        android:shortcutLongLabel="@string/shortcuts_long_label"
+        android:shortcutDisabledMessage="@string/shortcuts_disabled">
+        <intent
+            android:targetPackage="dev.akexorcist.flipfoldcounter"
+            android:action="android.intent.action.VIEW"
+            android:targetClass="dev.akexorcist.flipfoldcounter.CounterActivity"/>
+    </shortcut>
+</shortcuts>

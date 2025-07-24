@@ -3,8 +3,10 @@ package dev.akexorcist.flipfoldcounter.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
+import dev.akexorcist.flipfoldcounter.R
 import dev.akexorcist.flipfoldcounter.ui.instruction.InstructionScreen
 import dev.akexorcist.flipfoldcounter.ui.main.MainRoute
 
@@ -15,6 +17,7 @@ sealed class Screen {
 
 @Composable
 fun NavGraph() {
+    val context = LocalContext.current
     val backStack = remember { mutableStateListOf<Any>(Screen.Main) }
     NavDisplay(
         backStack = backStack,
@@ -24,11 +27,13 @@ fun NavGraph() {
                 is Screen.Main -> NavEntry(key) {
                     MainRoute(backStack)
                 }
+
                 is Screen.Instruction -> NavEntry(key) {
                     InstructionScreen(backStack)
                 }
+
                 else -> {
-                    error("Unknown route: $key")
+                    error(context.getString(R.string.main_error_unknown_route, key))
                 }
             }
         }
