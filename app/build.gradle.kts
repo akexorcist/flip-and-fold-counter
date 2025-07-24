@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("kotlin-kapt")
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -26,16 +26,16 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    kotlinOptions {
-        jvmTarget = "11"
-        freeCompilerArgs = listOf("-XXLanguage:+PropertyParamAnnotationDefaultTargetMode")
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
         compose = true
     }
+}
+
+kotlin {
+    jvmToolchain(17)
 }
 
 dependencies {
@@ -60,10 +60,16 @@ dependencies {
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    kapt(libs.androidx.room.compiler)
+    ksp(libs.androidx.room.compiler)
 
     implementation(libs.koin.android)
     implementation(libs.koin.compose)
 
     implementation(libs.pagerIndicator)
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    compilerOptions {
+        freeCompilerArgs = listOf("-XXLanguage:+PropertyParamAnnotationDefaultTargetMode")
+    }
 }
