@@ -79,9 +79,8 @@ fun MainRoute(backStack: NavBackStack) {
         totalCount = uiState.totalCount,
         todayCount = uiState.todayCount,
         thisMonthCount = uiState.thisMonthCount,
-        onInstructionClick = {
-            backStack.add(Screen.Instruction)
-        },
+        onStatisticsClick = { backStack.add(Screen.Statistics) },
+        onInstructionClick = { backStack.add(Screen.Instruction) },
         onGitHubClick = {
             activity?.startActivity(Intent(Intent.ACTION_VIEW, "https://akexorcist.dev".toUri()))
         },
@@ -103,6 +102,7 @@ fun MainScreen(
     totalCount: Int,
     todayCount: Int,
     thisMonthCount: Int,
+    onStatisticsClick: () -> Unit,
     onInstructionClick: () -> Unit,
     onGitHubClick: () -> Unit,
 ) {
@@ -112,6 +112,7 @@ fun MainScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             MainTopBar(
+                onStatisticsClick = onStatisticsClick,
                 onInstructionClick = onInstructionClick,
                 onGitHubClick = onGitHubClick,
             )
@@ -239,6 +240,7 @@ private fun Header() {
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun MainTopBar(
+    onStatisticsClick: () -> Unit,
     onInstructionClick: () -> Unit,
     onGitHubClick: () -> Unit,
 ) {
@@ -266,7 +268,7 @@ private fun MainTopBar(
             }
         },
         actions = {
-            IconButton(onClick = onGitHubClick) {
+            IconButton(onClick = onStatisticsClick) {
                 Icon(
                     painterResource(R.drawable.ic_statistics),
                     contentDescription = stringResource(R.string.content_description_statistics),
@@ -297,6 +299,7 @@ private fun MainScreenPreview() {
             totalCount = 38271,
             todayCount = 231,
             thisMonthCount = 6572,
+            onStatisticsClick = {},
             onInstructionClick = {},
             onGitHubClick = {},
         )

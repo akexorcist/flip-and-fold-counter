@@ -67,6 +67,7 @@ dependencies {
     implementation(libs.koin.compose)
 
     implementation(libs.pagerIndicator)
+    implementation(libs.vico)
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {

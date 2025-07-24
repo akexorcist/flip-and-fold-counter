@@ -12,15 +12,19 @@ import androidx.navigation3.ui.NavDisplay
 import dev.akexorcist.flipfoldcounter.R
 import dev.akexorcist.flipfoldcounter.ui.instruction.InstructionRoute
 import dev.akexorcist.flipfoldcounter.ui.main.MainRoute
+import dev.akexorcist.flipfoldcounter.ui.statistics.StatisticsRoute
 import kotlinx.serialization.Serializable
 
 @Serializable
-sealed class Screen: NavKey {
+sealed class Screen : NavKey {
     @Serializable
     data object Main : Screen()
 
     @Serializable
     data object Instruction : Screen()
+
+    @Serializable
+    data object Statistics : Screen()
 }
 
 @Composable
@@ -39,6 +43,10 @@ fun NavGraph() {
 
                 is Screen.Instruction -> NavEntry(key) {
                     InstructionRoute(backStack)
+                }
+
+                is Screen.Statistics -> NavEntry(key) {
+                    StatisticsRoute(backStack)
                 }
 
                 else -> {
