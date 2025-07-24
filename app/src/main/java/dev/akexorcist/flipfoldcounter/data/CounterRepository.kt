@@ -28,12 +28,6 @@ class CounterRepository(private val counterDao: CounterDao) {
         return counterDao.observeCurrentMonthCount(startOfMonth, endOfMonth).map { it ?: 0 }
     }
 
-    fun observeHourCount(dateTime: LocalDateTime): Flow<Int> {
-        val startOfHour = dateTime.withMinute(0).withSecond(0).withNano(0)
-        val endOfHour = startOfHour.plusHours(1)
-        return counterDao.observeHourCount(startOfHour, endOfHour).map { it ?: 0 }
-    }
-
     suspend fun clearAll() {
         counterDao.clearAll()
     }
