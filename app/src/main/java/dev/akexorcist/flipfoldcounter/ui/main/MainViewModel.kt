@@ -5,16 +5,34 @@ import androidx.lifecycle.viewModelScope
 import dev.akexorcist.flipfoldcounter.data.CounterRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 
 class MainViewModel(repository: CounterRepository) : ViewModel() {
 
-    val totalCount: StateFlow<Int> = repository.observeTotalCount()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
-
-    val todayCount: StateFlow<Int> = repository.observeTodayCount()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
-
-    val thisMonthCount: StateFlow<Int> = repository.observeCurrentMonthCount()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+    val uiState: StateFlow<MainUiState> = combine(
+        repository.observeTotalCount(),
+        repository.observeTodayCount(),
+        repository.observeCurrentMonthCount(),
+    ) { totalCount, todayCount, thisMonthCount ->
+        MainUiState(
+            totalCount = totalCount,
+            todayCount = todayCount,
+            thisMonthCount = thisMonthCount,
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = MainUiState(
+            totalCount = 0,
+            todayCount = 0,
+            thisMonthCount = 0,
+        )
+    )
 }
+
+data class MainUiState(
+    val totalCount: Int,
+    val todayCount: Int,
+    val thisMonthCount: Int,
+)

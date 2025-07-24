@@ -59,9 +59,7 @@ fun MainRoute(backStack: SnapshotStateList<Any>) {
     val activity = LocalActivity.current
     val context = LocalContext.current
     val viewModel: MainViewModel = koinViewModel()
-    val totalCount by viewModel.totalCount.collectAsState()
-    val todayCount by viewModel.todayCount.collectAsState()
-    val thisMonthCount by viewModel.thisMonthCount.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
@@ -78,9 +76,9 @@ fun MainRoute(backStack: SnapshotStateList<Any>) {
 
     MainScreen(
         snackbarHostState = snackbarHostState,
-        totalCount = totalCount,
-        todayCount = todayCount,
-        thisMonthCount = thisMonthCount,
+        totalCount = uiState.totalCount,
+        todayCount = uiState.todayCount,
+        thisMonthCount = uiState.thisMonthCount,
         onInstructionClick = {
             backStack.add(Screen.Instruction)
         },
