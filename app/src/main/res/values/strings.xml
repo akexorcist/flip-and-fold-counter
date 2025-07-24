@@ -14,7 +14,7 @@
     <string name="instruction_button_close">Close</string>
 
     <string name="content_description_flip_fold_devices">Flip &amp; Fold Devices</string>
-    <string name="content_description_summary_graph">Summary graph</string>
+    <string name="content_description_statistics">Statistics</string>
     <string name="content_description_instruction">Instruction</string>
     <string name="content_description_source_code">Source code on GitHub</string>
     <string name="content_description_back">Back</string>

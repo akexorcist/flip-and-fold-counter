@@ -268,8 +268,8 @@ private fun MainTopBar(
         actions = {
             IconButton(onClick = onGitHubClick) {
                 Icon(
-                    painterResource(R.drawable.ic_graph),
-                    contentDescription = stringResource(R.string.content_description_summary_graph),
+                    painterResource(R.drawable.ic_statistics),
+                    contentDescription = stringResource(R.string.content_description_statistics),
                 )
             }
             IconButton(onClick = onInstructionClick) {
