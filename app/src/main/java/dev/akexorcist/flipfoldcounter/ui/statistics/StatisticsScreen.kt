@@ -98,7 +98,7 @@ private fun StatisticsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp), // Added some general padding
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             when (uiState) {
@@ -231,103 +231,4 @@ private fun StatisticsTopBar(
             }
         }
     )
-}
-
-@Preview
-@Composable
-private fun StatisticsScreenPreview_Loading() {
-    FlipFoldCounterTheme {
-        Box(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
-            StatisticsScreen(
-                uiState = StatisticsUiState.Loading,
-                snackbarHostState = remember { SnackbarHostState() },
-                onBackClick = {},
-            )
-        }
-    }
-}
-
-@Preview
-@Composable
-private fun StatisticsScreenPreview_Error() {
-    FlipFoldCounterTheme {
-        Box(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
-            StatisticsScreen(
-                uiState = StatisticsUiState.Error(IllegalStateException("Preview Error")),
-                snackbarHostState = remember { SnackbarHostState() },
-                onBackClick = {},
-            )
-        }
-    }
-}
-
-@Preview
-@Composable
-private fun StatisticsScreenPreview_Success_Monthly() {
-    FlipFoldCounterTheme {
-        Box(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
-            StatisticsScreen(
-                uiState = StatisticsUiState.Success(
-                    GraphType.Monthly(
-                        data = mapOf(
-                            YearMonth.of(2023, 1) to 100,
-                            YearMonth.of(2023, 2) to 150
-                        ),
-                        max = 150,
-                        average = 125,
-                    )
-                ),
-                snackbarHostState = remember { SnackbarHostState() },
-                onBackClick = {},
-            )
-        }
-    }
-}
-
-@Preview
-@Composable
-private fun StatisticsScreenPreview_Success_Daily() {
-    FlipFoldCounterTheme {
-        Box(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
-            StatisticsScreen(
-                uiState = StatisticsUiState.Success(
-                    GraphType.Daily(
-                        yearMonth = YearMonth.of(2023, 1),
-                        data = mapOf(
-                            LocalDate.of(2023, 1, 1) to 10,
-                            LocalDate.of(2023, 1, 2) to 15
-                        ),
-                        max = 15,
-                        average = 12,
-                    )
-                ),
-                snackbarHostState = remember { SnackbarHostState() },
-                onBackClick = {},
-            )
-        }
-    }
-}
-
-@Preview
-@Composable
-private fun StatisticsScreenPreview_Success_Hourly() {
-    FlipFoldCounterTheme {
-        Box(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
-            StatisticsScreen(
-                uiState = StatisticsUiState.Success(
-                    GraphType.Hourly(
-                        date = LocalDate.of(2023, 1, 1),
-                        data = mapOf(
-                            LocalTime.of(10, 0) to 5,
-                            LocalTime.of(11, 0) to 8
-                        ),
-                        max = 8,
-                        average = 6,
-                    )
-                ),
-                snackbarHostState = remember { SnackbarHostState() },
-                onBackClick = {},
-            )
-        }
-    }
 }
