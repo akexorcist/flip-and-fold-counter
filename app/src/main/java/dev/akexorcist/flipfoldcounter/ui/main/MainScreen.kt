@@ -3,6 +3,8 @@ package dev.akexorcist.flipfoldcounter.ui.main
 import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.activity.compose.LocalActivity
+import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -37,9 +39,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -48,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.navigation3.runtime.NavBackStack
 import dev.akexorcist.flipfoldcounter.R
+import dev.akexorcist.flipfoldcounter.ui.component.AnimatedCountText
 import dev.akexorcist.flipfoldcounter.ui.component.AppCard
 import dev.akexorcist.flipfoldcounter.ui.navigation.Screen
 import kotlinx.coroutines.launch
@@ -107,7 +112,6 @@ fun MainScreen(
     onGitHubClick: () -> Unit,
 ) {
     val numberFormat = remember { NumberFormat.getInstance() }
-
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
@@ -140,15 +144,15 @@ fun MainScreen(
                 ) {
                     Text(
                         text = stringResource(R.string.main_label_all),
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                     )
                     Spacer(Modifier.height(2.dp))
-                    Text(
-                        text = numberFormat.format(totalCount),
+                    AnimatedCountText(
+                        count = totalCount,
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
                     )
                 }
             }
@@ -168,16 +172,15 @@ fun MainScreen(
                     ) {
                         Text(
                             text = stringResource(R.string.main_label_day),
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
                         )
                         Spacer(Modifier.height(2.dp))
-                        Text(
-                            text = numberFormat.format(todayCount),
-                            style = MaterialTheme.typography.headlineMedium,
+                        AnimatedCountText(
+                            count = todayCount,
+                            style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            textAlign = TextAlign.Center,
                         )
                     }
                 }
@@ -196,19 +199,17 @@ fun MainScreen(
                     ) {
                         Text(
                             text = stringResource(R.string.main_label_month),
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
                         Spacer(Modifier.height(2.dp))
-                        Text(
-                            text = numberFormat.format(thisMonthCount),
-                            style = MaterialTheme.typography.headlineMedium,
+                        AnimatedCountText(
+                            count = thisMonthCount,
+                            style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
@@ -299,9 +300,9 @@ private fun MainScreenPreview() {
             totalCount = 38271,
             todayCount = 231,
             thisMonthCount = 6572,
-            onStatisticsClick = {},
-            onInstructionClick = {},
-            onGitHubClick = {},
+            onStatisticsClick = { },
+            onInstructionClick = { },
+            onGitHubClick = { },
         )
     }
 }

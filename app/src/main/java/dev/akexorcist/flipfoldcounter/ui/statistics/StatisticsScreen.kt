@@ -61,13 +61,14 @@ import com.patrykandpatrick.vico.core.cartesian.data.columnSeries
 import com.patrykandpatrick.vico.core.common.component.TextComponent
 import com.patrykandpatrick.vico.core.common.shape.CorneredShape
 import dev.akexorcist.flipfoldcounter.R
+import dev.akexorcist.flipfoldcounter.ui.component.AnimatedCountText
 import dev.akexorcist.flipfoldcounter.ui.component.AppCard
 import dev.akexorcist.flipfoldcounter.ui.theme.FlipFoldCounterTheme
 import org.koin.androidx.compose.koinViewModel
+import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
-import java.text.NumberFormat
 
 @Composable
 fun StatisticsRoute(backStack: NavBackStack) {
@@ -130,6 +131,7 @@ private fun StatisticsScreen(
             ) {
                 when (uiState) {
                     is StatisticsUiState.Loading -> {
+                        Spacer(Modifier.height(16.dp))
                         CircularProgressIndicator(
                             modifier = Modifier.padding(16.dp),
                             trackColor = MaterialTheme.colorScheme.primary,
@@ -137,29 +139,49 @@ private fun StatisticsScreen(
                     }
 
                     is StatisticsUiState.Error -> {
+                        Spacer(Modifier.height(32.dp))
                         Text(
-                            text = "Error: ${uiState.error.localizedMessage ?: "Unknown error"}",
+                            text = stringResource(R.string.statistics_data_error),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            text = uiState.error.localizedMessage ?: "",
+                            style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.error,
                             textAlign = TextAlign.Center
                         )
                     }
 
                     is StatisticsUiState.Success -> {
-                        DateNavigator(
-                            graphType = uiState.graphType,
-                            isPreviousDayEnabled = uiState.isPreviousDayEnabled,
-                            isPreviousMonthEnabled = uiState.isPreviousMonthEnabled,
-                            isNextDayEnabled = uiState.isNextDayEnabled,
-                            isNextMonthEnabled = uiState.isNextMonthEnabled,
-                            onNextDay = onNextDay,
-                            onPreviousDay = onPreviousDay,
-                            onNextMonth = onNextMonth,
-                            onPreviousMonth = onPreviousMonth
-                        )
-                        Spacer(Modifier.height(16.dp))
-                        ChartContent(graphType = uiState.graphType)
+                        val graphType = uiState.graphType
+                        val (data, max, average) = when (graphType) {
+                            is GraphType.Hourly -> Triple(graphType.toSeries(), graphType.max, graphType.average)
+                            is GraphType.Daily -> Triple(graphType.toSeries(), graphType.max, graphType.average)
+                            is GraphType.Monthly -> Triple(graphType.toSeries(), graphType.max, graphType.average)
+                        }
+                        if (graphType !is GraphType.Monthly) {
+                            Spacer(Modifier.height(8.dp))
+                            DateNavigator(
+                                graphType = uiState.graphType,
+                                isPreviousDayEnabled = uiState.isPreviousDayEnabled,
+                                isPreviousMonthEnabled = uiState.isPreviousMonthEnabled,
+                                isNextDayEnabled = uiState.isNextDayEnabled,
+                                isNextMonthEnabled = uiState.isNextMonthEnabled,
+                                onNextDay = onNextDay,
+                                onPreviousDay = onPreviousDay,
+                                onNextMonth = onNextMonth,
+                                onPreviousMonth = onPreviousMonth
+                            )
+                            Spacer(Modifier.height(16.dp))
+                        }
+                        ChartContent(data = data)
                         Spacer(Modifier.height(8.dp))
-                        SummaryContent(graphType = uiState.graphType)
+                        SummaryContent(
+                            max = max,
+                            average = average,
+                        )
                     }
                 }
             }
@@ -169,13 +191,9 @@ private fun StatisticsScreen(
 
 @Composable
 private fun SummaryContent(
-    graphType: GraphType,
+    max: Int,
+    average: Int,
 ) {
-    val summary = when (graphType) {
-        is GraphType.Hourly -> Pair(graphType.max, graphType.average)
-        is GraphType.Daily -> Pair(graphType.max, graphType.average)
-        is GraphType.Monthly -> Pair(graphType.max, graphType.average)
-    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -193,10 +211,11 @@ private fun SummaryContent(
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
                 Text(
-                    text = NumberFormat.getInstance().format(summary.first),
+                    text = NumberFormat.getInstance().format(max),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    textAlign = TextAlign.Center,
                 )
             }
         }
@@ -214,10 +233,11 @@ private fun SummaryContent(
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
                 Text(
-                    text = NumberFormat.getInstance().format(summary.second),
+                    text = NumberFormat.getInstance().format(average),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    textAlign = TextAlign.Center,
                 )
             }
         }
@@ -236,7 +256,6 @@ private fun DateNavigator(
     onNextMonth: () -> Unit,
     onPreviousMonth: () -> Unit,
 ) {
-    if (graphType is GraphType.Monthly) return
     val isPreviousEnabled = when (graphType) {
         is GraphType.Hourly -> isPreviousDayEnabled
         is GraphType.Daily -> isPreviousMonthEnabled
@@ -336,15 +355,14 @@ private fun StatisticsTabs(
 }
 
 @Composable
-private fun ChartContent(graphType: GraphType) {
-    val data = when (graphType) {
-        is GraphType.Hourly -> graphType.toSeries()
-        is GraphType.Daily -> graphType.toSeries()
-        is GraphType.Monthly -> graphType.toSeries()
-    }
+private fun ChartContent(data: Map<Int, Int>) {
     AppCard {
         if (data.isEmpty()) {
-            Text(stringResource(R.string.statistics_empty_data))
+            Text(
+                text = stringResource(R.string.statistics_empty_data),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
         } else {
             BarChart(data)
         }

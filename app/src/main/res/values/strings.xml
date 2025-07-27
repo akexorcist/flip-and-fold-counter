@@ -18,6 +18,7 @@
     <string name="statistics_tab_month">Month</string>
     <string name="statistics_tab_overall">Overall</string>
     <string name="statistics_empty_data">Empty data</string>
+    <string name="statistics_data_error">Can\'t retrieve data</string>
     <string name="statistics_summary_max">Maximum</string>
     <string name="statistics_summary_average">Average</string>
 
