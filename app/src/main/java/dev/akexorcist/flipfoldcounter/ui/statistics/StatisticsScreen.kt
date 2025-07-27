@@ -17,7 +17,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -83,7 +82,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 private val dayFormatter by lazy { DateTimeFormatter.ofPattern("h a", Locale.getDefault()) }
-private val yearFormatter by lazy { DateTimeFormatter.ofPattern("MMM yyyy", Locale.getDefault()) }
+private val yearFormatter by lazy { DateTimeFormatter.ofPattern("MMM ''yy", Locale.getDefault()) }
 
 @Composable
 fun StatisticsRoute(backStack: NavBackStack, initialTab: StatisticsTab) {
@@ -454,7 +453,7 @@ private fun BarChart(
                         )
                     )
                 ),
-                columnCollectionSpacing = 32.dp,
+                columnCollectionSpacing = 36.dp,
                 dataLabelValueFormatter = numberValueFormatter,
             ),
             startAxis = VerticalAxis.rememberStart(
