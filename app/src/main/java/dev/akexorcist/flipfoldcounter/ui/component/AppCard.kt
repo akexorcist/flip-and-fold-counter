@@ -41,7 +41,7 @@ fun AppCard(
 private fun AppCardPreview() {
     FlipFoldCounterTheme {
         AppCard {
-            Text(stringResource(R.string.preview_hello_world))
+            Text(stringResource(R.string.app_name))
         }
     }
 }

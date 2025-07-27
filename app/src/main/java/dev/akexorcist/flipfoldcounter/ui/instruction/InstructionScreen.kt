@@ -8,12 +8,15 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -45,6 +48,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavBackStack
 import dev.akexorcist.flipfoldcounter.R
+import dev.akexorcist.flipfoldcounter.ui.component.Buttons
 import dev.akexorcist.flipfoldcounter.ui.theme.FlipFoldCounterTheme
 import kotlinx.coroutines.launch
 import mx.platacard.pagerindicator.PagerIndicatorOrientation
@@ -58,7 +62,7 @@ fun InstructionRoute(backStack: NavBackStack) {
 
     InstructionScreen(
         snackbarHostState = snackbarHostState,
-        onBackClick = { backStack.removeLastOrNull() },
+        onCloseClick = { backStack.removeLastOrNull() },
         onBottomAction = { action ->
             when (action) {
                 Action.OpenRoutines -> {
@@ -90,34 +94,38 @@ fun InstructionRoute(backStack: NavBackStack) {
 @Composable
 private fun InstructionScreen(
     snackbarHostState: SnackbarHostState,
-    onBackClick: () -> Unit,
+    onCloseClick: () -> Unit,
     onBottomAction: (Action) -> Unit,
 ) {
+    val coroutineScope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { instructionItems.size })
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             InstructionTopBar(
-                onBackClick = onBackClick,
+                onBackClick = onCloseClick,
             )
         },
         bottomBar = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Spacer(Modifier.height(16.dp))
-                PagerWormIndicator(
-                    pagerState = pagerState,
-                    activeDotColor = MaterialTheme.colorScheme.primary,
-                    dotColor = MaterialTheme.colorScheme.primaryContainer,
-                    dotCount = 6,
-                    orientation = PagerIndicatorOrientation.Horizontal
-                )
-                Spacer(Modifier.height(32.dp))
-            }
+            InstructionBottomBar(
+                currentPageIndex = pagerState.currentPage,
+                lastPageIndex = instructionItems.lastIndex,
+                onCloseClick = onCloseClick,
+                onPreviousClick = {
+                    coroutineScope.launch {
+                        pagerState.animateScrollToPage(
+                            (pagerState.currentPage - 1).coerceAtMost(instructionItems.lastIndex)
+                        )
+                    }
+                },
+                onNextClick = {
+                    coroutineScope.launch {
+                        pagerState.animateScrollToPage(
+                            (pagerState.currentPage + 1).coerceAtLeast(0)
+                        )
+                    }
+                },
+            )
         }
     ) { innerPadding ->
         Column(
@@ -126,6 +134,14 @@ private fun InstructionScreen(
                 .padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            Spacer(Modifier.height(32.dp))
+            PagerWormIndicator(
+                pagerState = pagerState,
+                activeDotColor = MaterialTheme.colorScheme.primary,
+                dotColor = MaterialTheme.colorScheme.primaryContainer,
+                dotCount = 6,
+                orientation = PagerIndicatorOrientation.Horizontal
+            )
             Spacer(Modifier.height(32.dp))
             HorizontalPager(
                 modifier = Modifier.fillMaxSize(),
@@ -138,6 +154,75 @@ private fun InstructionScreen(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun InstructionBottomBar(
+    currentPageIndex: Int,
+    lastPageIndex: Int,
+    onCloseClick: () -> Unit,
+    onPreviousClick: () -> Unit,
+    onNextClick: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+            .background(MaterialTheme.colorScheme.surface),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Spacer(Modifier.height(16.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 32.dp)
+        ) {
+            if (currentPageIndex > 0) {
+                IconButton(
+                    modifier = Modifier.size(48.dp),
+                    colors = Buttons.filledIconButton(),
+                    onClick = onPreviousClick,
+                ) {
+                    Icon(
+                        modifier = Modifier.size(32.dp),
+                        painter = painterResource(R.drawable.ic_previous),
+                        contentDescription = stringResource(R.string.content_description_previous),
+                    )
+                }
+            } else {
+                Spacer(Modifier.size(48.dp))
+            }
+            Spacer(Modifier.weight(1f))
+            if (currentPageIndex < lastPageIndex) {
+                IconButton(
+                    modifier = Modifier.size(48.dp),
+                    colors = Buttons.filledIconButton(),
+                    onClick = onNextClick,
+                ) {
+                    Icon(
+                        modifier = Modifier.size(32.dp),
+                        painter = painterResource(R.drawable.ic_next),
+                        contentDescription = stringResource(R.string.content_description_next),
+                    )
+                }
+            } else if (currentPageIndex == lastPageIndex) {
+                IconButton(
+                    modifier = Modifier.size(48.dp),
+                    colors = Buttons.filledIconButton(),
+                    onClick = onCloseClick,
+                ) {
+                    Icon(
+                        modifier = Modifier.size(32.dp),
+                        painter = painterResource(R.drawable.ic_close),
+                        contentDescription = stringResource(R.string.content_description_close),
+                    )
+                }
+            } else {
+                Spacer(Modifier.size(48.dp))
+            }
+        }
+        Spacer(Modifier.height(16.dp))
     }
 }
 
@@ -214,7 +299,7 @@ private fun InstructionScreenPreview() {
     FlipFoldCounterTheme {
         InstructionScreen(
             snackbarHostState = remember { SnackbarHostState() },
-            onBackClick = {},
+            onCloseClick = {},
             onBottomAction = {},
         )
     }
@@ -282,13 +367,5 @@ private val instructionItems = listOf(
     InstructionItem(
         description = R.string.instruction_step_11,
         image = R.drawable.instruction_11,
-        bottomAction = { action ->
-            Button(onClick = { action(Action.Close) }) {
-                Text(
-                    text = stringResource(R.string.instruction_button_close),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-        }
     ),
 )

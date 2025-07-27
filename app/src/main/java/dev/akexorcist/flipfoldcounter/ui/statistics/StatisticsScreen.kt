@@ -69,6 +69,7 @@ import com.patrykandpatrick.vico.core.common.component.TextComponent
 import com.patrykandpatrick.vico.core.common.shape.CorneredShape
 import dev.akexorcist.flipfoldcounter.R
 import dev.akexorcist.flipfoldcounter.ui.component.AppCard
+import dev.akexorcist.flipfoldcounter.ui.component.Buttons
 import dev.akexorcist.flipfoldcounter.ui.navigation.StatisticsTab
 import dev.akexorcist.flipfoldcounter.ui.theme.FlipFoldCounterTheme
 import org.koin.androidx.compose.koinViewModel
@@ -291,12 +292,7 @@ private fun DateNavigator(
         if (isPreviousEnabled) {
             IconButton(
                 modifier = Modifier.size(36.dp),
-                colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    disabledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
-                    disabledContentColor = MaterialTheme.colorScheme.surface,
-                ),
+                colors = Buttons.filledIconButton(),
                 onClick = { if (graphType is GraphType.Hourly) onPreviousDay() else onPreviousMonth() },
             ) {
                 Icon(
@@ -323,12 +319,7 @@ private fun DateNavigator(
         if (isNextEnabled) {
             IconButton(
                 modifier = Modifier.size(36.dp),
-                colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    disabledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
-                    disabledContentColor = MaterialTheme.colorScheme.surface,
-                ),
+                colors = Buttons.filledIconButton(),
                 onClick = { if (graphType is GraphType.Hourly) onNextDay() else onNextMonth() },
             ) {
                 Icon(
