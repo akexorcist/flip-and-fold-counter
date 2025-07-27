@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="main_title">คุณพับหน้าจอบ่อยแค่ไหน?</string>
+    <string name="main_label_all">ระยะเวลาทั้งหมด</string>
+    <string name="main_label_day">วันนี้</string>
+    <string name="main_label_month">เดือนนี้</string>
+    <string name="main_error_unknown_route">ไม่สามารถเปิดหน้าที่ไม่รู้จัก: %s</string>
+    <string name="main_routines_app_not_found">ไม่พบแอป Samsung Routines</string>
+    <string name="instruction_topbar">คำแนะนำ</string>
+    <string name="instruction_button_open_routines">เปิด Routines</string>
+    <string name="instruction_button_close">ปิด</string>
+    <string name="instruction_button_previous">ก่อนหน้า</string>
+    <string name="instruction_button_next">ถัดไป</string>
+    <string name="statistics_topbar">สถิติ</string>
+    <string name="statistics_tab_day">วัน</string>
+    <string name="statistics_tab_month">เดือน</string>
+    <string name="statistics_tab_overall">ทั้งหมด</string>
+    <string name="statistics_empty_data">ไม่มีข้อมูล</string>
+    <string name="statistics_data_error">ไม่สามารถแสดงข้อมูล</string>
+    <string name="statistics_summary_max">สูงสุด</string>
+    <string name="statistics_summary_average">เฉลี่ย</string>
+    <string name="content_description_flip_fold_devices">อุปกรณ์ที่พับหน้าจอได้</string>
+    <string name="content_description_statistics">สถิติ</string>
+    <string name="content_description_instruction">คำแนะนำ</string>
+    <string name="content_description_source_code">โค้ดบน GitHub</string>
+    <string name="content_description_back">ย้อนกลับ</string>
+    <string name="content_description_previous">ก่อนหน้า</string>
+    <string name="content_description_next">ถัดไป</string>
+    <string name="content_description_close">ปิด</string>
+    <string name="shortcuts_short_label">นับเมื่อพับจอ</string>
+    <string name="shortcuts_long_label">นับทุกครั้งที่พับหน้าจอ</string>
+    <string name="shortcuts_disabled">ปิดใช้งาน</string>
+    <string name="instruction_step_1">เปิดแอป Routines และกดปุ่ม + ที่ด้านบนของแอป</string>
+    <string name="instruction_step_2">กดปุ่ม + สีเขียวอันแรกสุดเพื่อเพิ่มเงื่อนไขในการทำงานของ Routine</string>
+    <string name="instruction_step_3">เลือก \"สถานะการพับ\"</string>
+    <string name="instruction_step_4">เลือก \"ปิดอย่างสมบูรณ์\" แล้วกดปุ่ม Done เพื่อเพิ่มเงื่อนไข</string>
+    <string name="instruction_step_5">กดปุ่ม + สีเขียวอันสุดท้ายเพื่อตั้งค่าการทำงานตามเงื่อนไข</string>
+    <string name="instruction_step_6">เลือก \"แอป\"</string>
+    <string name="instruction_step_7">เลือก \"เปิดแอพหรือการดำเนินการในแอพ\"</string>
+    <string name="instruction_step_8">เลือก \"นับเมื่อพับจอ\" ของแอป Flip &amp; Fold Counter แล้วกดปุ่ม \"เสร็จสิ้น\"</string>
+    <string name="instruction_step_9">กดปุ่ม \"บันทึก\" เพื่อสร้าง Routine</string>
+    <string name="instruction_step_10">ตั้งชื่อ, สี, และภาพไอคอนของ Routine ได้ตามใจชอบ แล้วกดปุ่ม \"เสร็จสิ้น\"</string>
+    <string name="instruction_step_11">เสร็จสิ้นการสร้าง Routine สำหรับแอป Flip &amp; Fold Counter</string>
+</resources>

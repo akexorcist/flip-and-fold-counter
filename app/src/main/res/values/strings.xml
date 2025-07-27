@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">Flip &amp; Fold Counter</string>
-    <string name="app_name_suffix">For Samsung Galaxy</string>
+    <string name="app_name" translatable="false">Flip &amp; Fold Counter</string>
+    <string name="app_name_suffix" translatable="false">For Samsung Galaxy</string>
 
     <string name="main_title">How often have you flipped/folded?</string>
     <string name="main_label_all">All the time</string>
@@ -12,6 +12,8 @@
     <string name="instruction_topbar">Instruction</string>
     <string name="instruction_button_open_routines">Open Routines</string>
     <string name="instruction_button_close">Close</string>
+    <string name="instruction_button_previous">Previous</string>
+    <string name="instruction_button_next">Next</string>
 
     <string name="statistics_topbar">Statistics</string>
     <string name="statistics_tab_day">Day</string>
@@ -29,6 +31,7 @@
     <string name="content_description_back">Back</string>
     <string name="content_description_previous">Previous</string>
     <string name="content_description_next">Next</string>
+    <string name="content_description_close">Close</string>
 
     <string name="shortcuts_short_label">Count on close</string>
     <string name="shortcuts_long_label">Counts on each time the screen is closed</string>
@@ -45,9 +48,4 @@
     <string name="instruction_step_9">Tap Save to create the Routine.</string>
     <string name="instruction_step_10">Customize the name, color, and icon image of the Routine as you like, then tap \"Done\".</string>
     <string name="instruction_step_11">You have successfully created the Routine for the Flip &amp; Fold Counter app.</string>
-
-    <string name="preview_hello_world">Hello World</string>
-    <string name="instruction_step">Instruction Step %d</string>
-    <string name="button_count_me_in">Count Me In!</string>
-    <string name="button_open_routines">Open Routines</string>
 </resources>
