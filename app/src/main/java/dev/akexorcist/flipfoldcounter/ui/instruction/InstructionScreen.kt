@@ -124,11 +124,10 @@ private fun InstructionScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
                 .padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Spacer(Modifier.height(48.dp))
+            Spacer(Modifier.height(32.dp))
             HorizontalPager(
                 modifier = Modifier.fillMaxSize(),
                 state = pagerState,
@@ -149,18 +148,11 @@ private fun InstructionPage(
     onBottomAction: (Action) -> Unit,
 ) {
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
     ) {
-        Text(
-            modifier = Modifier.padding(horizontal = 48.dp),
-            text = stringResource(id = item.description),
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center,
-            minLines = 3,
-        )
-        Spacer(modifier = Modifier.height(32.dp))
         Image(
             modifier = Modifier
                 .padding(horizontal = 16.dp)
@@ -169,11 +161,18 @@ private fun InstructionPage(
             painter = painterResource(id = item.image),
             contentDescription = stringResource(id = item.description)
         )
+        Spacer(modifier = Modifier.height(32.dp))
+        Text(
+            modifier = Modifier.padding(horizontal = 32.dp),
+            text = stringResource(id = item.description),
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center,
+        )
         item.bottomAction?.let { bottomAction ->
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             bottomAction { action -> onBottomAction(action) }
         }
-        Spacer(Modifier.height(48.dp))
+        Spacer(Modifier.height(16.dp))
     }
 }
 
