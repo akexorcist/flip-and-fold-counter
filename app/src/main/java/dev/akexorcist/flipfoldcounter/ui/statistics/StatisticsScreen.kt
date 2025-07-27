@@ -1,5 +1,6 @@
 package dev.akexorcist.flipfoldcounter.ui.statistics
 
+import android.graphics.Typeface
 import android.text.Layout
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -31,6 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -43,28 +45,42 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavBackStack
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisLabelComponent
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisLineComponent
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStart
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberColumnCartesianLayer
+import com.patrykandpatrick.vico.compose.cartesian.marker.rememberDefaultCartesianMarker
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
+import com.patrykandpatrick.vico.compose.cartesian.rememberFadingEdges
 import com.patrykandpatrick.vico.compose.common.component.fixed
+import com.patrykandpatrick.vico.compose.common.component.rememberLineComponent
 import com.patrykandpatrick.vico.compose.common.component.rememberShapeComponent
 import com.patrykandpatrick.vico.compose.common.component.rememberTextComponent
 import com.patrykandpatrick.vico.compose.common.fill
 import com.patrykandpatrick.vico.compose.common.insets
 import com.patrykandpatrick.vico.compose.common.shape.markerCorneredShape
 import com.patrykandpatrick.vico.compose.common.shape.rounded
+import com.patrykandpatrick.vico.compose.common.vicoTheme
+import com.patrykandpatrick.vico.core.cartesian.CartesianDrawingContext
+import com.patrykandpatrick.vico.core.cartesian.FadingEdges
 import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis
 import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.core.cartesian.data.CartesianLayerRangeProvider
+import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
 import com.patrykandpatrick.vico.core.cartesian.data.columnSeries
+import com.patrykandpatrick.vico.core.cartesian.layer.ColumnCartesianLayer
+import com.patrykandpatrick.vico.core.cartesian.marker.CartesianMarker
+import com.patrykandpatrick.vico.core.cartesian.marker.DefaultCartesianMarker
+import com.patrykandpatrick.vico.core.common.Defaults
 import com.patrykandpatrick.vico.core.common.component.TextComponent
 import com.patrykandpatrick.vico.core.common.shape.CorneredShape
 import dev.akexorcist.flipfoldcounter.R
-import dev.akexorcist.flipfoldcounter.ui.component.AnimatedCountText
 import dev.akexorcist.flipfoldcounter.ui.component.AppCard
 import dev.akexorcist.flipfoldcounter.ui.theme.FlipFoldCounterTheme
 import org.koin.androidx.compose.koinViewModel
+import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.YearMonth
@@ -390,26 +406,67 @@ private fun BarChart(data: Map<Int, Int>) {
             strokeThickness = 1.dp,
             strokeFill = fill(MaterialTheme.colorScheme.outline),
         )
-    val label = rememberTextComponent(
+    val axisLabelComponent = rememberAxisLabelComponent(
+        color = MaterialTheme.colorScheme.onPrimaryContainer,
+        textSize = MaterialTheme.typography.bodySmall.fontSize,
+        typeface = Typeface.DEFAULT_BOLD,
+    )
+    val markerTextComponent = rememberTextComponent(
         color = MaterialTheme.colorScheme.onBackground,
+        textSize = MaterialTheme.typography.bodySmall.fontSize,
+        typeface = Typeface.DEFAULT_BOLD,
         textAlignment = Layout.Alignment.ALIGN_CENTER,
         padding = insets(8.dp, 4.dp),
         background = labelBackground,
         minWidth = TextComponent.MinWidth.fixed(40.dp),
     )
+    val lintComponent = rememberAxisLineComponent(
+        fill = fill(MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
+    )
+    val numberFormatter by remember {
+        mutableStateOf(CartesianValueFormatter { _, value, _ ->
+            NumberFormat.getInstance().format(value)
+        })
+    }
     CartesianChartHost(
         modifier = Modifier
             .height(300.dp)
             .fillMaxWidth(),
         chart = rememberCartesianChart(
-            rememberColumnCartesianLayer(),
+            rememberColumnCartesianLayer(
+                columnProvider = ColumnCartesianLayer.ColumnProvider.series(
+                    columns = listOf(
+                        rememberLineComponent(
+                            fill = fill(MaterialTheme.colorScheme.primary),
+                            thickness = 24.dp,
+                        )
+                    )
+                ),
+                dataLabelValueFormatter = numberFormatter,
+            ),
             startAxis = VerticalAxis.rememberStart(
+                line = lintComponent,
+                tick = lintComponent,
+                label = axisLabelComponent,
+                valueFormatter = numberFormatter,
                 guideline = null,
             ),
             bottomAxis = HorizontalAxis.rememberBottom(
+                line = lintComponent,
+                tick = lintComponent,
+                label = axisLabelComponent,
                 guideline = null,
             ),
-            marker = com.patrykandpatrick.vico.compose.cartesian.marker.rememberDefaultCartesianMarker(label),
+            marker = rememberDefaultCartesianMarker(
+                label = markerTextComponent,
+                valueFormatter = DefaultCartesianMarker.ValueFormatter.default(
+                    decimalFormat = DecimalFormat("#,###")
+                ),
+            ),
+            fadingEdges = rememberFadingEdges(
+                startWidth = 0.dp,
+                endWidth = 8.dp,
+            ),
         ),
         modelProducer = modelProducer,
     )
