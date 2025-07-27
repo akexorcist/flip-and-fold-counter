@@ -1,19 +1,22 @@
 package dev.akexorcist.flipfoldcounter.ui.statistics
 
 import android.text.Layout
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -27,7 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -58,27 +61,23 @@ import com.patrykandpatrick.vico.core.cartesian.data.columnSeries
 import com.patrykandpatrick.vico.core.common.component.TextComponent
 import com.patrykandpatrick.vico.core.common.shape.CorneredShape
 import dev.akexorcist.flipfoldcounter.R
+import dev.akexorcist.flipfoldcounter.ui.component.AppCard
 import dev.akexorcist.flipfoldcounter.ui.theme.FlipFoldCounterTheme
 import org.koin.androidx.compose.koinViewModel
 import java.time.LocalDate
-import java.time.LocalTime
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
-import kotlin.math.max
+import java.text.NumberFormat
 
 @Composable
 fun StatisticsRoute(backStack: NavBackStack) {
     val viewModel: StatisticsViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    var selectedTabIndex by remember { mutableStateOf(0) }
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(selectedTabIndex) {
-        when (selectedTabIndex) {
-            0 -> viewModel.loadHourlyStats(LocalDate.now())
-            1 -> viewModel.loadDailyStats(YearMonth.now())
-            2 -> viewModel.loadMonthlyStats()
-        }
+        viewModel.onGraphTypeSelected(selectedTabIndex)
     }
 
     StatisticsScreen(
@@ -86,6 +85,10 @@ fun StatisticsRoute(backStack: NavBackStack) {
         snackbarHostState = snackbarHostState,
         selectedTabIndex = selectedTabIndex,
         onTabSelected = { index -> selectedTabIndex = index },
+        onNextDay = viewModel::onNextDay,
+        onPreviousDay = viewModel::onPreviousDay,
+        onNextMonth = viewModel::onNextMonth,
+        onPreviousMonth = viewModel::onPreviousMonth,
         onBackClick = { backStack.removeLastOrNull() }
     )
 }
@@ -96,6 +99,10 @@ private fun StatisticsScreen(
     snackbarHostState: SnackbarHostState,
     selectedTabIndex: Int,
     onTabSelected: (Int) -> Unit,
+    onNextDay: () -> Unit,
+    onPreviousDay: () -> Unit,
+    onNextMonth: () -> Unit,
+    onPreviousMonth: () -> Unit,
     onBackClick: () -> Unit,
 ) {
     Scaffold(
@@ -123,7 +130,10 @@ private fun StatisticsScreen(
             ) {
                 when (uiState) {
                     is StatisticsUiState.Loading -> {
-                        CircularProgressIndicator(modifier = Modifier.padding(16.dp))
+                        CircularProgressIndicator(
+                            modifier = Modifier.padding(16.dp),
+                            trackColor = MaterialTheme.colorScheme.primary,
+                        )
                     }
 
                     is StatisticsUiState.Error -> {
@@ -135,25 +145,164 @@ private fun StatisticsScreen(
                     }
 
                     is StatisticsUiState.Success -> {
-                        val graph = uiState.graphType
-                        val data = when (graph) {
-                            is GraphType.Hourly -> graph.toSeries()
-                            is GraphType.Daily -> graph.toSeries()
-                            is GraphType.Monthly -> graph.toSeries()
-                        }
-                        ChartContent(data)
-                        Text(
-                            text = when (graph) {
-                                is GraphType.Hourly -> "Hourly Stats for ${graph.date.format(DateTimeFormatter.ISO_LOCAL_DATE)}"
-                                is GraphType.Daily -> "Daily Stats for ${graph.yearMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy"))}"
-                                is GraphType.Monthly -> "Monthly Overview"
-                            },
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(bottom = 8.dp)
+                        DateNavigator(
+                            graphType = uiState.graphType,
+                            isPreviousDayEnabled = uiState.isPreviousDayEnabled,
+                            isPreviousMonthEnabled = uiState.isPreviousMonthEnabled,
+                            isNextDayEnabled = uiState.isNextDayEnabled,
+                            isNextMonthEnabled = uiState.isNextMonthEnabled,
+                            onNextDay = onNextDay,
+                            onPreviousDay = onPreviousDay,
+                            onNextMonth = onNextMonth,
+                            onPreviousMonth = onPreviousMonth
                         )
+                        Spacer(Modifier.height(16.dp))
+                        ChartContent(graphType = uiState.graphType)
+                        Spacer(Modifier.height(8.dp))
+                        SummaryContent(graphType = uiState.graphType)
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun SummaryContent(
+    graphType: GraphType,
+) {
+    val summary = when (graphType) {
+        is GraphType.Hourly -> Pair(graphType.max, graphType.average)
+        is GraphType.Daily -> Pair(graphType.max, graphType.average)
+        is GraphType.Monthly -> Pair(graphType.max, graphType.average)
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        AppCard(modifier = Modifier.width(140.dp)) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text = stringResource(R.string.statistics_summary_max),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+                Text(
+                    text = NumberFormat.getInstance().format(summary.first),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            }
+        }
+        Spacer(modifier = Modifier.width(16.dp))
+        AppCard(
+            modifier = Modifier.width(140.dp)
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text = stringResource(R.string.statistics_summary_average),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+                Text(
+                    text = NumberFormat.getInstance().format(summary.second),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun DateNavigator(
+    graphType: GraphType,
+    isPreviousDayEnabled: Boolean,
+    isPreviousMonthEnabled: Boolean,
+    isNextDayEnabled: Boolean,
+    isNextMonthEnabled: Boolean,
+    onNextDay: () -> Unit,
+    onPreviousDay: () -> Unit,
+    onNextMonth: () -> Unit,
+    onPreviousMonth: () -> Unit,
+) {
+    if (graphType is GraphType.Monthly) return
+    val isPreviousEnabled = when (graphType) {
+        is GraphType.Hourly -> isPreviousDayEnabled
+        is GraphType.Daily -> isPreviousMonthEnabled
+        else -> false
+    }
+    val isNextEnabled = when (graphType) {
+        is GraphType.Hourly -> isNextDayEnabled
+        is GraphType.Daily -> isNextMonthEnabled
+        else -> false
+    }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        if (isPreviousEnabled) {
+            IconButton(
+                modifier = Modifier.size(36.dp),
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    disabledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    disabledContentColor = MaterialTheme.colorScheme.surface,
+                ),
+                onClick = { if (graphType is GraphType.Hourly) onPreviousDay() else onPreviousMonth() },
+            ) {
+                Icon(
+                    modifier = Modifier.size(24.dp),
+                    painter = painterResource(R.drawable.ic_previous),
+                    contentDescription = stringResource(R.string.content_description_previous),
+                )
+            }
+        } else {
+            Spacer(Modifier.size(36.dp))
+        }
+        Text(
+            modifier = Modifier.width(160.dp),
+            text = when (val graph = graphType) {
+                is GraphType.Hourly -> graph.date.toDisplayDate()
+                is GraphType.Daily -> graph.yearMonth.toDisplayMonth()
+                else -> ""
+            },
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+        )
+        if (isNextEnabled) {
+            IconButton(
+                modifier = Modifier.size(36.dp),
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    disabledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    disabledContentColor = MaterialTheme.colorScheme.surface,
+                ),
+                onClick = { if (graphType is GraphType.Hourly) onNextDay() else onNextMonth() },
+            ) {
+                Icon(
+                    modifier = Modifier.size(24.dp),
+                    painter = painterResource(R.drawable.ic_next),
+                    contentDescription = stringResource(R.string.content_description_next),
+                )
+            }
+        } else {
+            Spacer(Modifier.size(36.dp))
         }
     }
 }
@@ -173,31 +322,32 @@ private fun StatisticsTabs(
             Tab(
                 selected = selectedTabIndex == index,
                 onClick = { onTabSelected(index) },
-                text = { Text(text = title) }
+                text = {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onBackground,
+                    )
+                }
             )
         }
     }
 }
 
-
-private fun GraphType.Hourly.toSeries(): Map<Int, Int> {
-    return this.data.mapKeys { it.key.hour }
-}
-
-private fun GraphType.Daily.toSeries(): Map<Int, Int> {
-    return this.data.mapKeys { it.key.dayOfMonth }
-}
-
-private fun GraphType.Monthly.toSeries(): Map<Int, Int> {
-    return this.data.mapKeys { it.key.monthValue }
-}
-
 @Composable
-private fun ChartContent(data: Map<Int, Int>) {
-    if (data.isEmpty()) {
-        Text(stringResource(R.string.statistics_empty_data))
-    } else {
-        BarChart(data)
+private fun ChartContent(graphType: GraphType) {
+    val data = when (graphType) {
+        is GraphType.Hourly -> graphType.toSeries()
+        is GraphType.Daily -> graphType.toSeries()
+        is GraphType.Monthly -> graphType.toSeries()
+    }
+    AppCard {
+        if (data.isEmpty()) {
+            Text(stringResource(R.string.statistics_empty_data))
+        } else {
+            BarChart(data)
+        }
     }
 }
 
@@ -230,6 +380,9 @@ private fun BarChart(data: Map<Int, Int>) {
         minWidth = TextComponent.MinWidth.fixed(40.dp),
     )
     CartesianChartHost(
+        modifier = Modifier
+            .height(300.dp)
+            .fillMaxWidth(),
         chart = rememberCartesianChart(
             rememberColumnCartesianLayer(),
             startAxis = VerticalAxis.rememberStart(
@@ -278,6 +431,16 @@ private fun StatisticsTopBar(
     )
 }
 
+private fun GraphType.Hourly.toSeries(): Map<Int, Int> = this.data.mapKeys { it.key.hour }
+
+private fun GraphType.Daily.toSeries(): Map<Int, Int> = this.data.mapKeys { it.key.dayOfMonth }
+
+private fun GraphType.Monthly.toSeries(): Map<Int, Int> = this.data.mapKeys { it.key.monthValue }
+
+private fun LocalDate.toDisplayDate() = this.format(DateTimeFormatter.ofPattern("d MMMM yyyy"))
+
+private fun YearMonth.toDisplayMonth() = this.format(DateTimeFormatter.ofPattern("MMMM yyyy"))
+
 @Preview(showBackground = true)
 @Composable
 private fun StatisticsScreenLoadingPreview() {
@@ -287,6 +450,10 @@ private fun StatisticsScreenLoadingPreview() {
             snackbarHostState = remember { SnackbarHostState() },
             selectedTabIndex = 0,
             onTabSelected = {},
+            onNextDay = {},
+            onPreviousDay = {},
+            onNextMonth = {},
+            onPreviousMonth = {},
             onBackClick = {}
         )
     }
@@ -301,6 +468,10 @@ private fun StatisticsScreenErrorPreview() {
             snackbarHostState = remember { SnackbarHostState() },
             selectedTabIndex = 0,
             onTabSelected = {},
+            onNextDay = {},
+            onPreviousDay = {},
+            onNextMonth = {},
+            onPreviousMonth = {},
             onBackClick = {}
         )
     }
@@ -320,11 +491,21 @@ private fun StatisticsScreenSuccessPreview() {
                     ),
                     max = 150,
                     average = 120,
-                )
+                ),
+                selectedDate = LocalDate.now(),
+                selectedMonth = YearMonth.now(),
+                isNextDayEnabled = false,
+                isPreviousDayEnabled = true,
+                isNextMonthEnabled = false,
+                isPreviousMonthEnabled = true,
             ),
             snackbarHostState = remember { SnackbarHostState() },
             selectedTabIndex = 2,
             onTabSelected = {},
+            onNextDay = {},
+            onPreviousDay = {},
+            onNextMonth = {},
+            onPreviousMonth = {},
             onBackClick = {}
         )
     }

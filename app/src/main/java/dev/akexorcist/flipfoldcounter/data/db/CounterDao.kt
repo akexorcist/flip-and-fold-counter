@@ -44,4 +44,10 @@ interface CounterDao {
 
     @Query("SELECT * FROM counter ORDER BY dateTime ASC")
     fun getAllCountsOrdered(): Flow<List<CounterEntity>>
+
+    @Query("SELECT * FROM counter ORDER BY dateTime ASC LIMIT 1")
+    fun getFirstEntry(): CounterEntity?
+
+    @Query("SELECT * FROM counter ORDER BY dateTime DESC LIMIT 1")
+    fun getLastEntry(): CounterEntity?
 }

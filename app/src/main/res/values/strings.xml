@@ -3,7 +3,7 @@
     <string name="app_name_suffix">For Samsung Galaxy</string>
 
     <string name="main_title">How often have you flipped/folded?</string>
-    <string name="main_label_all">All of the time</string>
+    <string name="main_label_all">All the time</string>
     <string name="main_label_day">Today</string>
     <string name="main_label_month">This Month</string>
     <string name="main_error_unknown_route">Unknown route: %s</string>
@@ -18,12 +18,16 @@
     <string name="statistics_tab_month">Month</string>
     <string name="statistics_tab_overall">Overall</string>
     <string name="statistics_empty_data">Empty data</string>
+    <string name="statistics_summary_max">Maximum</string>
+    <string name="statistics_summary_average">Average</string>
 
     <string name="content_description_flip_fold_devices">Flip &amp; Fold Devices</string>
     <string name="content_description_statistics">Statistics</string>
     <string name="content_description_instruction">Instruction</string>
     <string name="content_description_source_code">Source code on GitHub</string>
     <string name="content_description_back">Back</string>
+    <string name="content_description_previous">Previous</string>
+    <string name="content_description_next">Next</string>
 
     <string name="shortcuts_short_label">Count on close</string>
     <string name="shortcuts_long_label">Counts on each time the screen is closed</string>

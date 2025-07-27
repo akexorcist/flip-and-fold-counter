@@ -1,8 +1,10 @@
 package dev.akexorcist.flipfoldcounter.data
 
 import dev.akexorcist.flipfoldcounter.data.db.CounterDao
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.YearMonth
@@ -58,25 +60,12 @@ class StatisticsRepository(
                     .groupBy { entity -> YearMonth.from(entity.dateTime) }
                     .mapValues { entry -> entry.value.sumOf { it.count } }
 
-                // Determine the first month with data from the grouped results
-                // If monthlyCounts is empty (though 'entities.isEmpty()' should catch this),
-                // or if minOrNull returns null (should not happen if monthlyCounts is not empty),
-                // default to current month as a fallback for range start.
                 val firstMonthWithData = monthlyCounts.keys.minOrNull() ?: YearMonth.now()
                 val currentMonth = YearMonth.now()
 
                 val completeMonthlyStats = mutableMapOf<YearMonth, Int>()
                 var tempMonth = firstMonthWithData
-                // Ensure the loop does not run indefinitely if firstMonthWithData is after currentMonth
                 if (tempMonth.isAfter(currentMonth)) {
-                    // If the earliest data is somehow in the future,
-                    // just show the current month with its count or 0.
-                    // Or, one might choose to return an empty map or throw an error.
-                    // For now, let's ensure at least current month is considered if range is odd.
-                    // This specific case (firstMonthWithData > currentMonth) should be rare if data is historical.
-                    // A more robust way, if monthlyCounts.keys is guaranteed non-empty and sorted by nature of data,
-                    // is `entities.minOfOrNull { YearMonth.from(it.dateTime) } ?: YearMonth.now()`
-                    // but `monthlyCounts.keys.minOrNull()` is fine after grouping.
                 }
 
                 while (!tempMonth.isAfter(currentMonth)) {
@@ -85,5 +74,13 @@ class StatisticsRepository(
                 }
                 completeMonthlyStats.toMap()
             }
+    }
+
+    suspend fun getFirstEntryDate(): LocalDate? = withContext(Dispatchers.IO) {
+        counterDao.getFirstEntry()?.dateTime?.toLocalDate()
+    }
+
+    suspend fun getLastEntryDate(): LocalDate? = withContext(Dispatchers.IO) {
+        counterDao.getLastEntry()?.dateTime?.toLocalDate()
     }
 }

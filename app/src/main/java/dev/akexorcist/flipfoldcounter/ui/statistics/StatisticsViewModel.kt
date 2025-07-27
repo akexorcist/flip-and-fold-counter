@@ -38,6 +38,12 @@ sealed interface StatisticsUiState {
     data object Loading : StatisticsUiState
     data class Success(
         val graphType: GraphType,
+        val selectedDate: LocalDate,
+        val selectedMonth: YearMonth,
+        val isNextDayEnabled: Boolean,
+        val isPreviousDayEnabled: Boolean,
+        val isNextMonthEnabled: Boolean,
+        val isPreviousMonthEnabled: Boolean,
     ) : StatisticsUiState
 
     data class Error(val error: Throwable) : StatisticsUiState
@@ -50,7 +56,48 @@ class StatisticsViewModel(
     private val _uiState = MutableStateFlow<StatisticsUiState>(StatisticsUiState.Loading)
     val uiState: StateFlow<StatisticsUiState> = _uiState.asStateFlow()
 
-    fun loadHourlyStats(date: LocalDate) {
+    private val _selectedDate = MutableStateFlow(LocalDate.now())
+    private val _selectedMonth = MutableStateFlow(YearMonth.now())
+
+    private var firstEntryDate: LocalDate? = null
+    private var lastEntryDate: LocalDate? = null
+
+    init {
+        viewModelScope.launch {
+            firstEntryDate = statisticsRepository.getFirstEntryDate()
+            lastEntryDate = statisticsRepository.getLastEntryDate() ?: LocalDate.now()
+        }
+    }
+
+    fun onGraphTypeSelected(graphType: Int) {
+        when (graphType) {
+            0 -> loadHourlyStats(_selectedDate.value)
+            1 -> loadDailyStats(_selectedMonth.value)
+            2 -> loadMonthlyStats()
+        }
+    }
+
+    fun onNextDay() {
+        _selectedDate.value = _selectedDate.value.plusDays(1)
+        loadHourlyStats(_selectedDate.value)
+    }
+
+    fun onPreviousDay() {
+        _selectedDate.value = _selectedDate.value.minusDays(1)
+        loadHourlyStats(_selectedDate.value)
+    }
+
+    fun onNextMonth() {
+        _selectedMonth.value = _selectedMonth.value.plusMonths(1)
+        loadDailyStats(_selectedMonth.value)
+    }
+
+    fun onPreviousMonth() {
+        _selectedMonth.value = _selectedMonth.value.minusMonths(1)
+        loadDailyStats(_selectedMonth.value)
+    }
+
+    private fun loadHourlyStats(date: LocalDate) {
         _uiState.value = StatisticsUiState.Loading
         viewModelScope.launch {
             statisticsRepository.getHourlyStats(date)
@@ -60,19 +107,29 @@ class StatisticsViewModel(
                 .collect { dataMap ->
                     val max = dataMap.values.maxOrNull() ?: 0
                     val average = if (dataMap.isNotEmpty()) dataMap.values.average().toInt() else 0
+                    val isNextDayEnabled = lastEntryDate?.let { _selectedDate.value.isBefore(it) } ?: false
+                    val isPreviousDayEnabled = firstEntryDate?.let { _selectedDate.value.isAfter(it) } ?: false
+                    val isNextMonthEnabled = lastEntryDate?.let { _selectedMonth.value.isBefore(YearMonth.from(it)) } ?: false
+                    val isPreviousMonthEnabled = firstEntryDate?.let { _selectedMonth.value.isAfter(YearMonth.from(it)) } ?: false
                     _uiState.value = StatisticsUiState.Success(
-                        GraphType.Hourly(
+                        graphType = GraphType.Hourly(
                             date = date,
                             data = dataMap,
                             max = max,
                             average = average
-                        )
+                        ),
+                        selectedDate = _selectedDate.value,
+                        selectedMonth = _selectedMonth.value,
+                        isNextDayEnabled = isNextDayEnabled,
+                        isPreviousDayEnabled = isPreviousDayEnabled,
+                        isNextMonthEnabled = isNextMonthEnabled,
+                        isPreviousMonthEnabled = isPreviousMonthEnabled,
                     )
                 }
         }
     }
 
-    fun loadDailyStats(yearMonth: YearMonth) {
+    private fun loadDailyStats(yearMonth: YearMonth) {
         _uiState.value = StatisticsUiState.Loading
         viewModelScope.launch {
             statisticsRepository.getDailyStats(yearMonth)
@@ -82,19 +139,29 @@ class StatisticsViewModel(
                 .collect { dataMap ->
                     val max = dataMap.values.maxOrNull() ?: 0
                     val average = if (dataMap.isNotEmpty()) dataMap.values.average().toInt() else 0
+                    val isNextDayEnabled = lastEntryDate?.let { _selectedDate.value.isBefore(it) } ?: false
+                    val isPreviousDayEnabled = firstEntryDate?.let { _selectedDate.value.isAfter(it) } ?: false
+                    val isNextMonthEnabled = lastEntryDate?.let { _selectedMonth.value.isBefore(YearMonth.from(it)) } ?: false
+                    val isPreviousMonthEnabled = firstEntryDate?.let { _selectedMonth.value.isAfter(YearMonth.from(it)) } ?: false
                     _uiState.value = StatisticsUiState.Success(
-                        GraphType.Daily(
+                        graphType = GraphType.Daily(
                             yearMonth = yearMonth,
                             data = dataMap,
                             max = max,
                             average = average
-                        )
+                        ),
+                        selectedDate = _selectedDate.value,
+                        selectedMonth = _selectedMonth.value,
+                        isNextDayEnabled = isNextDayEnabled,
+                        isPreviousDayEnabled = isPreviousDayEnabled,
+                        isNextMonthEnabled = isNextMonthEnabled,
+                        isPreviousMonthEnabled = isPreviousMonthEnabled,
                     )
                 }
         }
     }
 
-    fun loadMonthlyStats() {
+    private fun loadMonthlyStats() {
         _uiState.value = StatisticsUiState.Loading
         viewModelScope.launch {
             statisticsRepository.getAllMonthlyStats()
@@ -104,12 +171,22 @@ class StatisticsViewModel(
                 .collect { dataMap ->
                     val max = dataMap.values.maxOrNull() ?: 0
                     val average = if (dataMap.isNotEmpty()) dataMap.values.average().toInt() else 0
+                    val isNextDayEnabled = lastEntryDate?.let { _selectedDate.value.isBefore(it) } ?: false
+                    val isPreviousDayEnabled = firstEntryDate?.let { _selectedDate.value.isAfter(it) } ?: false
+                    val isNextMonthEnabled = lastEntryDate?.let { _selectedMonth.value.isBefore(YearMonth.from(it)) } ?: false
+                    val isPreviousMonthEnabled = firstEntryDate?.let { _selectedMonth.value.isAfter(YearMonth.from(it)) } ?: false
                     _uiState.value = StatisticsUiState.Success(
-                        GraphType.Monthly(
+                        graphType = GraphType.Monthly(
                             data = dataMap,
                             max = max,
                             average = average
-                        )
+                        ),
+                        selectedDate = _selectedDate.value,
+                        selectedMonth = _selectedMonth.value,
+                        isNextDayEnabled = isNextDayEnabled,
+                        isPreviousDayEnabled = isPreviousDayEnabled,
+                        isNextMonthEnabled = isNextMonthEnabled,
+                        isPreviousMonthEnabled = isPreviousMonthEnabled,
                     )
                 }
         }
