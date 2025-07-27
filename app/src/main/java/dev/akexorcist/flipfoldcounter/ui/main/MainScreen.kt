@@ -87,7 +87,12 @@ fun MainRoute(backStack: NavBackStack) {
         onStatisticsClick = { backStack.add(Screen.Statistics) },
         onInstructionClick = { backStack.add(Screen.Instruction) },
         onGitHubClick = {
-            activity?.startActivity(Intent(Intent.ACTION_VIEW, "https://akexorcist.dev".toUri()))
+            activity?.startActivity(
+                Intent(
+                    Intent.ACTION_VIEW,
+                    "https://github.com/akexorcist/flip-and-fold-counter".toUri(),
+                )
+            )
         },
     )
 }
