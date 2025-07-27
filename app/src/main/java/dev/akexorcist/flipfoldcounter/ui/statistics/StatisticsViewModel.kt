@@ -3,6 +3,7 @@ package dev.akexorcist.flipfoldcounter.ui.statistics
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.akexorcist.flipfoldcounter.data.StatisticsRepository
+import dev.akexorcist.flipfoldcounter.ui.navigation.StatisticsTab
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -50,11 +51,13 @@ sealed interface StatisticsUiState {
 }
 
 class StatisticsViewModel(
-    private val statisticsRepository: StatisticsRepository
+    private val statisticsRepository: StatisticsRepository,
 ) : ViewModel() {
-
     private val _uiState = MutableStateFlow<StatisticsUiState>(StatisticsUiState.Loading)
     val uiState: StateFlow<StatisticsUiState> = _uiState.asStateFlow()
+
+    private val _selectedTabIndex = MutableStateFlow(0)
+    val selectedTabIndex: StateFlow<Int> = _selectedTabIndex.asStateFlow()
 
     private val _selectedDate = MutableStateFlow(LocalDate.now())
     private val _selectedMonth = MutableStateFlow(YearMonth.now())
@@ -62,14 +65,24 @@ class StatisticsViewModel(
     private var firstEntryDate: LocalDate? = null
     private var lastEntryDate: LocalDate? = null
 
-    init {
-        viewModelScope.launch {
-            firstEntryDate = statisticsRepository.getFirstEntryDate()
-            lastEntryDate = statisticsRepository.getLastEntryDate() ?: LocalDate.now()
+    fun initial(initialTab: StatisticsTab) = viewModelScope.launch {
+        firstEntryDate = statisticsRepository.getFirstEntryDate()
+        lastEntryDate = statisticsRepository.getLastEntryDate() ?: LocalDate.now()
+        val initialTabIndex = when (initialTab) {
+            StatisticsTab.DAY -> 0
+            StatisticsTab.MONTH -> 1
+            StatisticsTab.OVERALL -> 2
         }
+        _selectedTabIndex.value = initialTabIndex
+        onGraphTypeSelected(initialTabIndex)
     }
 
-    fun onGraphTypeSelected(graphType: Int) {
+    fun onTabSelected(index: Int) {
+        _selectedTabIndex.value = index
+        onGraphTypeSelected(index)
+    }
+
+    private fun onGraphTypeSelected(graphType: Int) {
         when (graphType) {
             0 -> loadHourlyStats(_selectedDate.value)
             1 -> loadDailyStats(_selectedMonth.value)

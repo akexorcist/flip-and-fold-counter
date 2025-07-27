@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -37,6 +39,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -51,6 +54,7 @@ import dev.akexorcist.flipfoldcounter.R
 import dev.akexorcist.flipfoldcounter.ui.component.AnimatedCountText
 import dev.akexorcist.flipfoldcounter.ui.component.AppCard
 import dev.akexorcist.flipfoldcounter.ui.navigation.Screen
+import dev.akexorcist.flipfoldcounter.ui.navigation.StatisticsTab
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
@@ -79,7 +83,10 @@ fun MainRoute(backStack: NavBackStack) {
         totalCount = uiState.totalCount,
         todayCount = uiState.todayCount,
         thisMonthCount = uiState.thisMonthCount,
-        onStatisticsClick = { backStack.add(Screen.Statistics) },
+        onOverallClick = { backStack.add(Screen.Statistics(initialTab = StatisticsTab.OVERALL)) },
+        onTodayClick = { backStack.add(Screen.Statistics(initialTab = StatisticsTab.DAY)) },
+        onThisMonthClick = { backStack.add(Screen.Statistics(initialTab = StatisticsTab.MONTH)) },
+        onStatisticsClick = { backStack.add(Screen.Statistics(initialTab = StatisticsTab.DAY)) },
         onInstructionClick = { backStack.add(Screen.Instruction) },
         onGitHubClick = {
             activity?.startActivity(
@@ -107,6 +114,9 @@ fun MainScreen(
     totalCount: Int,
     todayCount: Int,
     thisMonthCount: Int,
+    onOverallClick: () -> Unit,
+    onTodayClick: () -> Unit,
+    onThisMonthClick: () -> Unit,
     onStatisticsClick: () -> Unit,
     onInstructionClick: () -> Unit,
     onGitHubClick: () -> Unit,
@@ -132,7 +142,11 @@ fun MainScreen(
             Spacer(Modifier.height(32.dp))
             Header()
             Spacer(Modifier.height(48.dp))
-            AppCard {
+            AppCard(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable(onClick = onOverallClick),
+            ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -161,6 +175,8 @@ fun MainScreen(
                     modifier = Modifier
                         .weight(1f)
                         .widthIn(max = 320.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable(onClick = onTodayClick),
                 ) {
                     Column(
                         modifier = Modifier
@@ -188,6 +204,8 @@ fun MainScreen(
                     modifier = Modifier
                         .weight(1f)
                         .widthIn(max = 320.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable(onClick = onThisMonthClick),
                 ) {
                     Column(
                         modifier = Modifier
@@ -299,6 +317,9 @@ private fun MainScreenPreview() {
             totalCount = 38271,
             todayCount = 231,
             thisMonthCount = 6572,
+            onOverallClick = {},
+            onTodayClick = {},
+            onThisMonthClick = {},
             onStatisticsClick = { },
             onInstructionClick = { },
             onGitHubClick = { },

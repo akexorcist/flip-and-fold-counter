@@ -31,9 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -71,8 +69,10 @@ import com.patrykandpatrick.vico.core.common.component.TextComponent
 import com.patrykandpatrick.vico.core.common.shape.CorneredShape
 import dev.akexorcist.flipfoldcounter.R
 import dev.akexorcist.flipfoldcounter.ui.component.AppCard
+import dev.akexorcist.flipfoldcounter.ui.navigation.StatisticsTab
 import dev.akexorcist.flipfoldcounter.ui.theme.FlipFoldCounterTheme
 import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.time.LocalDate
@@ -85,21 +85,21 @@ private val dayFormatter by lazy { DateTimeFormatter.ofPattern("h a", Locale.get
 private val yearFormatter by lazy { DateTimeFormatter.ofPattern("MMM yyyy", Locale.getDefault()) }
 
 @Composable
-fun StatisticsRoute(backStack: NavBackStack) {
-    val viewModel: StatisticsViewModel = koinViewModel()
+fun StatisticsRoute(backStack: NavBackStack, initialTab: StatisticsTab) {
+    val viewModel: StatisticsViewModel = koinViewModel(parameters = { parametersOf(initialTab) })
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
+    val selectedTabIndex by viewModel.selectedTabIndex.collectAsState()
 
-    LaunchedEffect(selectedTabIndex) {
-        viewModel.onGraphTypeSelected(selectedTabIndex)
+    LaunchedEffect(Unit) {
+        viewModel.initial(initialTab)
     }
 
     StatisticsScreen(
         uiState = uiState,
         snackbarHostState = snackbarHostState,
         selectedTabIndex = selectedTabIndex,
-        onTabSelected = { index -> selectedTabIndex = index },
+        onTabSelected = viewModel::onTabSelected,
         onNextDay = viewModel::onNextDay,
         onPreviousDay = viewModel::onPreviousDay,
         onNextMonth = viewModel::onNextMonth,
@@ -436,17 +436,17 @@ private fun BarChart(
 
     val bottomAxisValueFormatter = CartesianValueFormatter { _, value, _ ->
         when (graphType) {
-            is GraphType.Hourly -> {
+            is GraphType.Hourly -> runCatching {
                 val time = LocalTime.of(value.toInt(), 0)
                 dayFormatter.format(time)
-            }
+            }.getOrNull() ?: value.toString()
 
             is GraphType.Daily -> value.toInt().toString()
 
-            is GraphType.Monthly -> {
+            is GraphType.Monthly -> runCatching {
                 val dateTime = YearMonth.of(value.toInt() / 100, value.toInt() % 100)
                 yearFormatter.format(dateTime)
-            }
+            }.getOrNull() ?: value.toString()
         }
     }
     CartesianChartHost(

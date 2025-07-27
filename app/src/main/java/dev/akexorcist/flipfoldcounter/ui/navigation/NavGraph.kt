@@ -15,6 +15,10 @@ import dev.akexorcist.flipfoldcounter.ui.main.MainRoute
 import dev.akexorcist.flipfoldcounter.ui.statistics.StatisticsRoute
 import kotlinx.serialization.Serializable
 
+enum class StatisticsTab {
+    DAY, MONTH, OVERALL
+}
+
 @Serializable
 sealed class Screen : NavKey {
     @Serializable
@@ -24,7 +28,7 @@ sealed class Screen : NavKey {
     data object Instruction : Screen()
 
     @Serializable
-    data object Statistics : Screen()
+    data class Statistics(val initialTab: StatisticsTab) : Screen()
 }
 
 @Composable
@@ -46,7 +50,7 @@ fun NavGraph() {
                 }
 
                 is Screen.Statistics -> NavEntry(key) {
-                    StatisticsRoute(backStack)
+                    StatisticsRoute(backStack, key.initialTab)
                 }
 
                 else -> {
