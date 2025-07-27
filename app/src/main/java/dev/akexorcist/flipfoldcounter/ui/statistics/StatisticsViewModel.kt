@@ -11,7 +11,6 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.YearMonth
-import java.time.ZoneOffset
 
 sealed class GraphType {
     data class Hourly(
