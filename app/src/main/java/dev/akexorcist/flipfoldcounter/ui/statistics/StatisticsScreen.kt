@@ -32,7 +32,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -61,19 +60,13 @@ import com.patrykandpatrick.vico.compose.common.fill
 import com.patrykandpatrick.vico.compose.common.insets
 import com.patrykandpatrick.vico.compose.common.shape.markerCorneredShape
 import com.patrykandpatrick.vico.compose.common.shape.rounded
-import com.patrykandpatrick.vico.compose.common.vicoTheme
-import com.patrykandpatrick.vico.core.cartesian.CartesianDrawingContext
-import com.patrykandpatrick.vico.core.cartesian.FadingEdges
 import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis
 import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
-import com.patrykandpatrick.vico.core.cartesian.data.CartesianLayerRangeProvider
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
 import com.patrykandpatrick.vico.core.cartesian.data.columnSeries
 import com.patrykandpatrick.vico.core.cartesian.layer.ColumnCartesianLayer
-import com.patrykandpatrick.vico.core.cartesian.marker.CartesianMarker
 import com.patrykandpatrick.vico.core.cartesian.marker.DefaultCartesianMarker
-import com.patrykandpatrick.vico.core.common.Defaults
 import com.patrykandpatrick.vico.core.common.component.TextComponent
 import com.patrykandpatrick.vico.core.common.shape.CorneredShape
 import dev.akexorcist.flipfoldcounter.R
@@ -82,9 +75,17 @@ import dev.akexorcist.flipfoldcounter.ui.theme.FlipFoldCounterTheme
 import org.koin.androidx.compose.koinViewModel
 import java.text.DecimalFormat
 import java.text.NumberFormat
+import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.YearMonth
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Locale
+
+private val dayFormatter by lazy { DateTimeFormatter.ofPattern("h a", Locale.getDefault()) }
+private val yearFormatter by lazy { DateTimeFormatter.ofPattern("MMM yyyy", Locale.getDefault()) }
 
 @Composable
 fun StatisticsRoute(backStack: NavBackStack) {
@@ -192,7 +193,10 @@ private fun StatisticsScreen(
                             )
                             Spacer(Modifier.height(16.dp))
                         }
-                        ChartContent(data = data)
+                        ChartContent(
+                            graphType = graphType,
+                            data = data,
+                        )
                         Spacer(Modifier.height(8.dp))
                         SummaryContent(
                             max = max,
@@ -371,7 +375,10 @@ private fun StatisticsTabs(
 }
 
 @Composable
-private fun ChartContent(data: Map<Int, Int>) {
+private fun ChartContent(
+    graphType: GraphType,
+    data: Map<Int, Int>,
+) {
     AppCard {
         if (data.isEmpty()) {
             Text(
@@ -380,13 +387,16 @@ private fun ChartContent(data: Map<Int, Int>) {
                 color = MaterialTheme.colorScheme.onSurface,
             )
         } else {
-            BarChart(data)
+            BarChart(graphType, data)
         }
     }
 }
 
 @Composable
-private fun BarChart(data: Map<Int, Int>) {
+private fun BarChart(
+    graphType: GraphType,
+    data: Map<Int, Int>,
+) {
     val modelProducer = remember { CartesianChartModelProducer() }
     LaunchedEffect(data) {
         modelProducer.runTransaction {
@@ -398,7 +408,7 @@ private fun BarChart(data: Map<Int, Int>) {
             }
         }
     }
-    val labelBackgroundShape = markerCorneredShape(CorneredShape.rounded(4.dp))
+    val labelBackgroundShape = markerCorneredShape(base = CorneredShape.rounded(4.dp))
     val labelBackground =
         rememberShapeComponent(
             fill = fill(MaterialTheme.colorScheme.background),
@@ -423,10 +433,24 @@ private fun BarChart(data: Map<Int, Int>) {
     val lintComponent = rememberAxisLineComponent(
         fill = fill(MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
     )
-    val numberFormatter by remember {
-        mutableStateOf(CartesianValueFormatter { _, value, _ ->
-            NumberFormat.getInstance().format(value)
-        })
+    val numberValueFormatter = CartesianValueFormatter { _, value, _ ->
+        NumberFormat.getInstance().format(value)
+    }
+
+    val bottomAxisValueFormatter = CartesianValueFormatter { _, value, _ ->
+        when (graphType) {
+            is GraphType.Hourly -> {
+                val time = LocalTime.of(value.toInt(), 0)
+                dayFormatter.format(time)
+            }
+
+            is GraphType.Daily -> value.toInt().toString()
+
+            is GraphType.Monthly -> {
+                val dateTime = YearMonth.of(value.toInt() / 100, value.toInt() % 100)
+                yearFormatter.format(dateTime)
+            }
+        }
     }
     CartesianChartHost(
         modifier = Modifier
@@ -442,19 +466,21 @@ private fun BarChart(data: Map<Int, Int>) {
                         )
                     )
                 ),
-                dataLabelValueFormatter = numberFormatter,
+                columnCollectionSpacing = 32.dp,
+                dataLabelValueFormatter = numberValueFormatter,
             ),
             startAxis = VerticalAxis.rememberStart(
                 line = lintComponent,
                 tick = lintComponent,
                 label = axisLabelComponent,
-                valueFormatter = numberFormatter,
+                valueFormatter = numberValueFormatter,
                 guideline = null,
             ),
             bottomAxis = HorizontalAxis.rememberBottom(
                 line = lintComponent,
                 tick = lintComponent,
                 label = axisLabelComponent,
+                valueFormatter = bottomAxisValueFormatter,
                 guideline = null,
             ),
             marker = rememberDefaultCartesianMarker(
@@ -510,7 +536,7 @@ private fun GraphType.Hourly.toSeries(): Map<Int, Int> = this.data.mapKeys { it.
 
 private fun GraphType.Daily.toSeries(): Map<Int, Int> = this.data.mapKeys { it.key.dayOfMonth }
 
-private fun GraphType.Monthly.toSeries(): Map<Int, Int> = this.data.mapKeys { it.key.monthValue }
+private fun GraphType.Monthly.toSeries(): Map<Int, Int> = this.data.mapKeys { it.key.let { key -> (key.year * 100) + key.monthValue } }
 
 private fun LocalDate.toDisplayDate() = this.format(DateTimeFormatter.ofPattern("d MMMM yyyy"))
 
@@ -560,9 +586,9 @@ private fun StatisticsScreenSuccessPreview() {
             uiState = StatisticsUiState.Success(
                 graphType = GraphType.Monthly(
                     data = mapOf(
-                        YearMonth.of(2023, 1) to 100,
-                        YearMonth.of(2023, 2) to 120,
-                        YearMonth.of(2023, 3) to 150,
+                        YearMonth.of(2024, 12) to 100,
+                        YearMonth.of(2024, 11) to 120,
+                        YearMonth.of(2024, 10) to 150,
                     ),
                     max = 150,
                     average = 120,

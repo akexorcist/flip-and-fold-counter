@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.YearMonth
+import java.time.ZoneOffset
 
 sealed class GraphType {
     data class Hourly(
@@ -104,9 +105,9 @@ class StatisticsViewModel(
                 .catch { exception ->
                     _uiState.value = StatisticsUiState.Error(exception)
                 }
-                .collect { dataMap ->
-                    val max = dataMap.values.maxOrNull() ?: 0
-                    val average = if (dataMap.isNotEmpty()) dataMap.values.average().toInt() else 0
+                .collect { data ->
+                    val max = data.values.maxOrNull() ?: 0
+                    val average = if (data.isNotEmpty()) data.values.average().toInt() else 0
                     val isNextDayEnabled = lastEntryDate?.let { _selectedDate.value.isBefore(it) } ?: false
                     val isPreviousDayEnabled = firstEntryDate?.let { _selectedDate.value.isAfter(it) } ?: false
                     val isNextMonthEnabled = lastEntryDate?.let { _selectedMonth.value.isBefore(YearMonth.from(it)) } ?: false
@@ -114,7 +115,7 @@ class StatisticsViewModel(
                     _uiState.value = StatisticsUiState.Success(
                         graphType = GraphType.Hourly(
                             date = date,
-                            data = dataMap,
+                            data = data,
                             max = max,
                             average = average
                         ),
@@ -136,9 +137,9 @@ class StatisticsViewModel(
                 .catch { exception ->
                     _uiState.value = StatisticsUiState.Error(exception)
                 }
-                .collect { dataMap ->
-                    val max = dataMap.values.maxOrNull() ?: 0
-                    val average = if (dataMap.isNotEmpty()) dataMap.values.average().toInt() else 0
+                .collect { data ->
+                    val max = data.values.maxOrNull() ?: 0
+                    val average = if (data.isNotEmpty()) data.values.average().toInt() else 0
                     val isNextDayEnabled = lastEntryDate?.let { _selectedDate.value.isBefore(it) } ?: false
                     val isPreviousDayEnabled = firstEntryDate?.let { _selectedDate.value.isAfter(it) } ?: false
                     val isNextMonthEnabled = lastEntryDate?.let { _selectedMonth.value.isBefore(YearMonth.from(it)) } ?: false
@@ -146,7 +147,7 @@ class StatisticsViewModel(
                     _uiState.value = StatisticsUiState.Success(
                         graphType = GraphType.Daily(
                             yearMonth = yearMonth,
-                            data = dataMap,
+                            data = data,
                             max = max,
                             average = average
                         ),
@@ -168,16 +169,16 @@ class StatisticsViewModel(
                 .catch { exception ->
                     _uiState.value = StatisticsUiState.Error(exception)
                 }
-                .collect { dataMap ->
-                    val max = dataMap.values.maxOrNull() ?: 0
-                    val average = if (dataMap.isNotEmpty()) dataMap.values.average().toInt() else 0
+                .collect { data ->
+                    val max = data.values.maxOrNull() ?: 0
+                    val average = if (data.isNotEmpty()) data.values.average().toInt() else 0
                     val isNextDayEnabled = lastEntryDate?.let { _selectedDate.value.isBefore(it) } ?: false
                     val isPreviousDayEnabled = firstEntryDate?.let { _selectedDate.value.isAfter(it) } ?: false
                     val isNextMonthEnabled = lastEntryDate?.let { _selectedMonth.value.isBefore(YearMonth.from(it)) } ?: false
                     val isPreviousMonthEnabled = firstEntryDate?.let { _selectedMonth.value.isAfter(YearMonth.from(it)) } ?: false
                     _uiState.value = StatisticsUiState.Success(
                         graphType = GraphType.Monthly(
-                            data = dataMap,
+                            data = data,
                             max = max,
                             average = average
                         ),
