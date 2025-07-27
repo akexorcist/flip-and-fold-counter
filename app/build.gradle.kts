@@ -68,6 +68,7 @@ dependencies {
 
     implementation(libs.pagerIndicator)
     implementation(libs.vico)
+    implementation(libs.splashscreen)
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
