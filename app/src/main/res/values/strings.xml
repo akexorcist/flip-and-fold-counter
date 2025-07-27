@@ -14,6 +14,10 @@
     <string name="instruction_button_close">Close</string>
 
     <string name="statistics_topbar">Statistics</string>
+    <string name="statistics_tab_day">Day</string>
+    <string name="statistics_tab_month">Month</string>
+    <string name="statistics_tab_overall">Overall</string>
+    <string name="statistics_empty_data">Empty data</string>
 
     <string name="content_description_flip_fold_devices">Flip &amp; Fold Devices</string>
     <string name="content_description_statistics">Statistics</string>

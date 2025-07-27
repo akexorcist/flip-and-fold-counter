@@ -16,7 +16,7 @@ class StatisticsRepository(
         return counterDao.getCountsForDateRange(startOfDay, endOfDay)
             .map { entities ->
                 val hourlyCounts = entities
-                    .groupBy { entity -> entity.dateTime.toLocalTime() }
+                    .groupBy { entity -> LocalTime.of(entity.dateTime.hour, 0) }
                     .mapValues { entry -> entry.value.sumOf { it.count } }
 
                 val completeHourlyStats = mutableMapOf<LocalTime, Int>()
