@@ -13,26 +13,29 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.YearMonth
 
-sealed class GraphType {
+sealed class GraphType(
+    open val max: Int,
+    open val average: Int,
+) {
     data class Hourly(
         val date: LocalDate,
         val data: Map<LocalTime, Int>,
-        val max: Int,
-        val average: Int,
-    ) : GraphType()
+        override val max: Int,
+        override val average: Int,
+    ) : GraphType(max, average)
 
     data class Daily(
         val yearMonth: YearMonth,
         val data: Map<LocalDate, Int>,
-        val max: Int,
-        val average: Int,
-    ) : GraphType()
+        override val max: Int,
+        override val average: Int,
+    ) : GraphType(max, average)
 
     data class Monthly(
         val data: Map<YearMonth, Int>,
-        val max: Int,
-        val average: Int,
-    ) : GraphType()
+        override val max: Int,
+        override val average: Int,
+    ) : GraphType(max, average)
 }
 
 sealed interface StatisticsUiState {

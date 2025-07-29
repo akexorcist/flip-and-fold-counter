@@ -80,6 +80,7 @@ import java.time.LocalTime
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlin.math.pow
 
 private val dayFormatter by lazy { DateTimeFormatter.ofPattern("h a", Locale.getDefault()) }
 private val yearFormatter by lazy { DateTimeFormatter.ofPattern("MMM ''yy", Locale.getDefault()) }
@@ -170,10 +171,10 @@ private fun StatisticsScreen(
 
                     is StatisticsUiState.Success -> {
                         val graphType = uiState.graphType
-                        val (data, max, average) = when (graphType) {
-                            is GraphType.Hourly -> Triple(graphType.toSeries(), graphType.max, graphType.average)
-                            is GraphType.Daily -> Triple(graphType.toSeries(), graphType.max, graphType.average)
-                            is GraphType.Monthly -> Triple(graphType.toSeries(), graphType.max, graphType.average)
+                        val data = when (graphType) {
+                            is GraphType.Hourly -> graphType.toSeries()
+                            is GraphType.Daily -> graphType.toSeries()
+                            is GraphType.Monthly -> graphType.toSeries()
                         }
                         if (graphType !is GraphType.Monthly) {
                             Spacer(Modifier.height(8.dp))
@@ -196,8 +197,8 @@ private fun StatisticsScreen(
                         )
                         Spacer(Modifier.height(8.dp))
                         SummaryContent(
-                            max = max,
-                            average = average,
+                            max = graphType.max,
+                            average = graphType.average,
                         )
                     }
                 }
@@ -439,6 +440,7 @@ private fun BarChart(
             }.getOrNull() ?: value.toString()
         }
     }
+
     CartesianChartHost(
         modifier = Modifier
             .height(300.dp)
@@ -461,6 +463,30 @@ private fun BarChart(
                 tick = lintComponent,
                 label = axisLabelComponent,
                 valueFormatter = numberValueFormatter,
+                itemPlacer = VerticalAxis.ItemPlacer.step(
+                    step = {
+                        val max = graphType.max
+                        val numberOfDigits = max.toString().length.toDouble()
+                        
+                        // Calculate a base step size, which is the nearest power of 10 below the max value.
+                        // Example: if numberOfDigits is 3, step becomes 10^(3-1) = 100.
+                        val step = 10.0.pow(numberOfDigits - 1)
+
+                        // Decide if the base step is granular enough.
+                        // The logic checks if 'max' is less than 40% of the next power of 10.
+                        // Example: if max is 350, 350 / 1000 = 0.35, which is less than 0.4.
+                        if (max / (step * 10) > 0.4) {
+                            // If the max value is relatively large (e.g., 850), use the calculated base step.
+                            // Result for 850 -> 100.
+                            step
+                        } else {
+                            // If the max value is smaller (e.g., 350), halve the step for better granularity.
+                            // Result for 350 -> 50.
+                            step / 2
+                        }
+                    },
+                    shiftTopLines = true,
+                ),
                 guideline = null,
             ),
             bottomAxis = HorizontalAxis.rememberBottom(
