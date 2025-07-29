@@ -67,9 +67,8 @@ fun InstructionRoute(backStack: NavBackStack) {
             when (action) {
                 Action.OpenRoutines -> {
                     activity?.let { context ->
-                        val intent = Intent("com.samsung.android.app.routines.action.SETTINGS").apply {
+                        val intent = Intent("com.samsung.android.app.routines.action.LAUNCH_ROUTINE_TAB").apply {
                             setPackage("com.samsung.android.app.routines")
-                            addCategory(Intent.CATEGORY_DEFAULT)
                             setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         }
                         if (intent.resolveActivity(context.packageManager) != null) {
