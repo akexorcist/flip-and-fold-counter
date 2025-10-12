@@ -41,4 +41,9 @@
     <string name="instruction_step_9">กดปุ่ม \"บันทึก\" เพื่อสร้าง Routine</string>
     <string name="instruction_step_10">ตั้งชื่อ, สี, และภาพไอคอนของ Routine ได้ตามใจชอบ แล้วกดปุ่ม \"เสร็จสิ้น\"</string>
     <string name="instruction_step_11">เสร็จสิ้นการสร้าง Routine สำหรับแอป Flip &amp; Fold Counter</string>
+
+    <string name="dialog_before_using_title">ก่อนใช้งานแอปนี้</string>
+    <string name="dialog_before_using_message">แอปนี้ทำงานร่วมกับ Samsung Routings โดยเปิดแอปขึ้นมาเพื่อนับจำนวนครั้งที่พับหน้าจอ\n\nสำหรับอุปกรณ์อย่าง Samsung Galazy Z Fold การพับหน้าจอจะทำให้แอปที่คุณกำลังใช้งานอยู่ปิดลง ซึ่งเป็นข้อจำกัดในการทำงานของแอปนี้\n\nคำแนะนำในการเริ่มใช้งานจะอยู่ในปุ่มเมนูคำแนะนำ</string>
+    <string name="dialog_before_using_do_not_show_again">ไม่ต้องแสดงอีก</string>
+    <string name="dialog_before_using_ok">ตกลง</string>
 </resources>

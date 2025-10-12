@@ -48,4 +48,9 @@
     <string name="instruction_step_9">Tap Save to create the Routine.</string>
     <string name="instruction_step_10">Customize the name, color, and icon image of the Routine as you like, then tap \"Done\".</string>
     <string name="instruction_step_11">You have successfully created the Routine for the Flip &amp; Fold Counter app.</string>
+
+    <string name="dialog_before_using_title">Before using this app</string>
+    <string name="dialog_before_using_message">This app works with Samsung Routines, opening the app to count screen flips or folds.\n\nConsequently, on devices like the Samsung Galaxy Z Fold, folding the screen will close the app you currently have open. This is a functional limitation.\n\nSetup instruction is available in the instruction menu at the top right.</string>
+    <string name="dialog_before_using_do_not_show_again">Don\'t show this again</string>
+    <string name="dialog_before_using_ok">OK</string>
 </resources>

@@ -35,8 +35,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,6 +56,7 @@ import androidx.navigation3.runtime.NavBackStack
 import dev.akexorcist.flipfoldcounter.R
 import dev.akexorcist.flipfoldcounter.ui.component.AnimatedCountText
 import dev.akexorcist.flipfoldcounter.ui.component.AppCard
+import dev.akexorcist.flipfoldcounter.ui.component.BeforeUsingDialog
 import dev.akexorcist.flipfoldcounter.ui.navigation.Screen
 import dev.akexorcist.flipfoldcounter.ui.navigation.StatisticsTab
 import kotlinx.coroutines.launch
@@ -66,6 +70,7 @@ fun MainRoute(backStack: NavBackStack) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    var showBeforeUsingDialog by rememberSaveable { mutableStateOf(uiState.showBeforeUsingAgain) }
 
     LaunchedEffect(Unit) {
         if (!context.packageManager.isRoutinesAppAvailable()) {
@@ -76,6 +81,17 @@ fun MainRoute(backStack: NavBackStack) {
                 )
             }
         }
+    }
+
+    if (showBeforeUsingDialog) {
+        BeforeUsingDialog(
+            onDismissRequest = { doNotShowAgain ->
+                if (doNotShowAgain) {
+                    viewModel.markAsDoNotShowBeforeUsingAgain()
+                }
+                showBeforeUsingDialog = false
+            }
+        )
     }
 
     MainScreen(
