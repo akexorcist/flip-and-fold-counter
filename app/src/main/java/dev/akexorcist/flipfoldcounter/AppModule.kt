@@ -19,7 +19,7 @@ val appModule = module {
     factory { AppSettingsDataSource(androidContext()) }
     factory<AppSettingsRepository> { DefaultAppSettingsRepository(get()) }
     factoryOf(::CounterRepository)
-    factoryOf(::StatisticsRepository)
+    factory { StatisticsRepository(get()) }
     viewModelOf(::MainViewModel)
     viewModelOf(::CounterViewModel)
     viewModelOf(::StatisticsViewModel)

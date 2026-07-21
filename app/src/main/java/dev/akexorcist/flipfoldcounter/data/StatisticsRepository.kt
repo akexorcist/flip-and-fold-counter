@@ -1,6 +1,7 @@
 package dev.akexorcist.flipfoldcounter.data
 
 import dev.akexorcist.flipfoldcounter.data.db.CounterDao
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -11,6 +12,7 @@ import java.time.YearMonth
 
 class StatisticsRepository(
     private val counterDao: CounterDao,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) {
     fun getHourlyStats(date: LocalDate): Flow<Map<LocalTime, Int>> {
         val startOfDay = date.atStartOfDay()
@@ -63,12 +65,15 @@ class StatisticsRepository(
                 val firstMonthWithData = monthlyCounts.keys.minOrNull() ?: YearMonth.now()
                 val currentMonth = YearMonth.now()
 
-                val completeMonthlyStats = mutableMapOf<YearMonth, Int>()
-                var tempMonth = firstMonthWithData
-                if (tempMonth.isAfter(currentMonth)) {
-                }
+                // firstMonthWithData can be after currentMonth if a recorded entry's clock was
+                // set into the future (then later corrected), so the range must not assume
+                // firstMonthWithData <= currentMonth.
+                val rangeStart = minOf(firstMonthWithData, currentMonth)
+                val rangeEnd = maxOf(firstMonthWithData, currentMonth)
 
-                while (!tempMonth.isAfter(currentMonth)) {
+                val completeMonthlyStats = mutableMapOf<YearMonth, Int>()
+                var tempMonth = rangeStart
+                while (!tempMonth.isAfter(rangeEnd)) {
                     completeMonthlyStats[tempMonth] = monthlyCounts[tempMonth] ?: 0
                     tempMonth = tempMonth.plusMonths(1)
                 }
@@ -76,11 +81,11 @@ class StatisticsRepository(
             }
     }
 
-    suspend fun getFirstEntryDate(): LocalDate? = withContext(Dispatchers.IO) {
+    suspend fun getFirstEntryDate(): LocalDate? = withContext(ioDispatcher) {
         counterDao.getFirstEntry()?.dateTime?.toLocalDate()
     }
 
-    suspend fun getLastEntryDate(): LocalDate? = withContext(Dispatchers.IO) {
+    suspend fun getLastEntryDate(): LocalDate? = withContext(ioDispatcher) {
         counterDao.getLastEntry()?.dateTime?.toLocalDate()
     }
 }
