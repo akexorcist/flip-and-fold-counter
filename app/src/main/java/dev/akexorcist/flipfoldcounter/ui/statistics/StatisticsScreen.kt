@@ -85,6 +85,19 @@ import kotlin.math.pow
 private val dayFormatter by lazy { DateTimeFormatter.ofPattern("h a", Locale.getDefault()) }
 private val yearFormatter by lazy { DateTimeFormatter.ofPattern("MMM ''yy", Locale.getDefault()) }
 
+// Must increase by exactly 1 between consecutive months, or Vico's axis tick placer can
+// interpolate a value that doesn't decode back to a valid month (e.g. `year * 100 + month`
+// jumps by 89 across a year boundary).
+internal object MonthlyAxisEncoder {
+    fun encode(yearMonth: YearMonth): Int = yearMonth.year * 12 + yearMonth.monthValue
+
+    fun decode(value: Int): YearMonth {
+        val year = (value - 1) / 12
+        val month = (value - 1) % 12 + 1
+        return YearMonth.of(year, month)
+    }
+}
+
 @Composable
 fun StatisticsRoute(backStack: NavBackStack, initialTab: StatisticsTab) {
     val viewModel: StatisticsViewModel = koinViewModel(parameters = { parametersOf(initialTab) })
@@ -435,8 +448,7 @@ private fun BarChart(
             is GraphType.Daily -> value.toInt().toString()
 
             is GraphType.Monthly -> runCatching {
-                val dateTime = YearMonth.of(value.toInt() / 100, value.toInt() % 100)
-                yearFormatter.format(dateTime)
+                yearFormatter.format(MonthlyAxisEncoder.decode(value.toInt()))
             }.getOrNull() ?: value.toString()
         }
     }
@@ -549,7 +561,7 @@ private fun GraphType.Hourly.toSeries(): Map<Int, Int> = this.data.mapKeys { it.
 
 private fun GraphType.Daily.toSeries(): Map<Int, Int> = this.data.mapKeys { it.key.dayOfMonth }
 
-private fun GraphType.Monthly.toSeries(): Map<Int, Int> = this.data.mapKeys { it.key.let { key -> (key.year * 100) + key.monthValue } }
+private fun GraphType.Monthly.toSeries(): Map<Int, Int> = this.data.mapKeys { MonthlyAxisEncoder.encode(it.key) }
 
 private fun LocalDate.toDisplayDate() = this.format(DateTimeFormatter.ofPattern("d MMMM yyyy"))
 
