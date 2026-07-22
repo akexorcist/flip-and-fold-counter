@@ -50,6 +50,7 @@ jobs:
           packageName: dev.akexorcist.flipfoldcounter
           releaseFiles: app/build/outputs/bundle/release/app-release.aab
           track: production
+          changesNotSentForReview: true
 
       - name: Create GitHub Release
         env:
