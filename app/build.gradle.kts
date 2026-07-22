@@ -1,9 +1,24 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.serialization)
+}
+
+// GITHUB_RUN_NUMBER starts at 1 and has no relation to what's already live on the
+// Play Store; this offset keeps the release workflow's first versionCode safely
+// above the current live versionCode (3 as of 2026-07-19).
+val versionCodeOffset = 100
+val releaseVersionName: String? = System.getenv("RELEASE_VERSION_NAME")
+val releaseRunNumber: String? = System.getenv("GITHUB_RUN_NUMBER")
+
+if (releaseVersionName != null) {
+    require(Regex("""^\d+\.\d+\.\d+$""").matches(releaseVersionName)) {
+        "RELEASE_VERSION_NAME must be in X.Y.Z format, got: $releaseVersionName"
+    }
 }
 
 android {
@@ -14,16 +29,34 @@ android {
         applicationId = "dev.akexorcist.flipfoldcounter"
         minSdk = 29
         targetSdk = 36
-        versionCode = 3
-        versionName = "1.2.0"
+        versionCode = releaseRunNumber?.let { it.toInt() + versionCodeOffset } ?: 3
+        versionName = releaseVersionName ?: "1.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    val keystoreProperties = Properties()
+    val keystorePropertiesFile = rootProject.file("local.properties")
+    if (keystorePropertiesFile.exists()) {
+        keystoreProperties.load(keystorePropertiesFile.inputStream())
+    }
+
+    signingConfigs {
+        create("release") {
+            storeFile = file(keystoreProperties.getProperty("keystore_path", "release.keystore"))
+            storePassword = keystoreProperties.getProperty("keystore_password", "")
+            keyAlias = keystoreProperties.getProperty("keystore_key_alias", "")
+            keyPassword = keystoreProperties.getProperty("keystore_key_password", "")
+            enableV3Signing = true
+            enableV4Signing = true
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
