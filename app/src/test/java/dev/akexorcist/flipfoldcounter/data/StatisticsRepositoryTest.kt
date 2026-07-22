@@ -1,20 +1,19 @@
 package dev.akexorcist.flipfoldcounter.data
 
+import app.cash.turbine.test
 import dev.akexorcist.flipfoldcounter.data.db.CounterEntity
 import dev.akexorcist.flipfoldcounter.data.db.FakeCounterDao
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Test
+import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.maps.shouldBeEmpty
+import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.shouldBe
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.YearMonth
 
-class StatisticsRepositoryTest {
+class StatisticsRepositoryTest : StringSpec({
 
-    @Test
-    fun `getHourlyStats fills every hour of the day and excludes other days`() = runTest {
+    "getHourlyStats fills every hour of the day and excludes other days" {
         val dao = FakeCounterDao()
         val date = LocalDate.of(2026, 1, 15)
         dao.seed(
@@ -25,17 +24,18 @@ class StatisticsRepositoryTest {
             CounterEntity(date.plusDays(1).atTime(9, 0), count = 100),
         )
 
-        val stats = StatisticsRepository(dao).getHourlyStats(date).first()
-
-        assertEquals(24, stats.size)
-        assertEquals(5, stats[LocalTime.of(9, 0)])
-        assertEquals(1, stats[LocalTime.of(23, 0)])
-        assertEquals(0, stats[LocalTime.of(0, 0)])
-        assertEquals(0, stats[LocalTime.of(12, 0)])
+        StatisticsRepository(dao).getHourlyStats(date).test {
+            val stats = awaitItem()
+            stats.size shouldBe 24
+            stats[LocalTime.of(9, 0)] shouldBe 5
+            stats[LocalTime.of(23, 0)] shouldBe 1
+            stats[LocalTime.of(0, 0)] shouldBe 0
+            stats[LocalTime.of(12, 0)] shouldBe 0
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
-    @Test
-    fun `getDailyStats fills every day of the month and excludes other months`() = runTest {
+    "getDailyStats fills every day of the month and excludes other months" {
         val dao = FakeCounterDao()
         val month = YearMonth.of(2026, 2) // 28 days, non-leap
         dao.seed(
@@ -45,23 +45,24 @@ class StatisticsRepositoryTest {
             CounterEntity(month.plusMonths(1).atDay(1).atTime(10, 0), count = 100),
         )
 
-        val stats = StatisticsRepository(dao).getDailyStats(month).first()
-
-        assertEquals(28, stats.size)
-        assertEquals(10, stats[month.atDay(1)])
-        assertEquals(20, stats[month.atDay(28)])
-        assertEquals(0, stats[month.atDay(15)])
+        StatisticsRepository(dao).getDailyStats(month).test {
+            val stats = awaitItem()
+            stats.size shouldBe 28
+            stats[month.atDay(1)] shouldBe 10
+            stats[month.atDay(28)] shouldBe 20
+            stats[month.atDay(15)] shouldBe 0
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
-    @Test
-    fun `getAllMonthlyStats is empty when there is no data`() = runTest {
-        val stats = StatisticsRepository(FakeCounterDao()).getAllMonthlyStats().first()
-
-        assertEquals(emptyMap<YearMonth, Int>(), stats)
+    "getAllMonthlyStats is empty when there is no data" {
+        StatisticsRepository(FakeCounterDao()).getAllMonthlyStats().test {
+            awaitItem().shouldBeEmpty()
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
-    @Test
-    fun `getAllMonthlyStats fills a zero-data month across a year boundary`() = runTest {
+    "getAllMonthlyStats fills a zero-data month across a year boundary" {
         val dao = FakeCounterDao()
         dao.seed(
             CounterEntity(YearMonth.of(2025, 11).atDay(1).atTime(9, 0), count = 30),
@@ -69,53 +70,55 @@ class StatisticsRepositoryTest {
             CounterEntity(YearMonth.of(2026, 1).atDay(1).atTime(9, 0), count = 50),
         )
 
-        val stats = StatisticsRepository(dao).getAllMonthlyStats().first()
-
-        assertEquals(30, stats[YearMonth.of(2025, 11)])
-        assertEquals(0, stats[YearMonth.of(2025, 12)])
-        assertEquals(50, stats[YearMonth.of(2026, 1)])
+        StatisticsRepository(dao).getAllMonthlyStats().test {
+            val stats = awaitItem()
+            stats[YearMonth.of(2025, 11)] shouldBe 30
+            stats[YearMonth.of(2025, 12)] shouldBe 0
+            stats[YearMonth.of(2026, 1)] shouldBe 50
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
-    @Test
-    fun `getAllMonthlyStats extends the fill up to the current month`() = runTest {
+    "getAllMonthlyStats extends the fill up to the current month" {
         val dao = FakeCounterDao()
         val twoMonthsAgo = YearMonth.now().minusMonths(2)
         dao.seed(CounterEntity(twoMonthsAgo.atDay(1).atTime(9, 0), count = 15))
 
-        val stats = StatisticsRepository(dao).getAllMonthlyStats().first()
-
-        assertEquals(3, stats.size) // twoMonthsAgo, lastMonth, currentMonth
-        assertEquals(15, stats[twoMonthsAgo])
-        assertEquals(0, stats[YearMonth.now().minusMonths(1)])
-        assertEquals(0, stats[YearMonth.now()])
+        StatisticsRepository(dao).getAllMonthlyStats().test {
+            val stats = awaitItem()
+            stats.size shouldBe 3 // twoMonthsAgo, lastMonth, currentMonth
+            stats[twoMonthsAgo] shouldBe 15
+            stats[YearMonth.now().minusMonths(1)] shouldBe 0
+            stats[YearMonth.now()] shouldBe 0
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
-    @Test
-    fun `getAllMonthlyStats still fills the range when the only entry is dated after the current month`() = runTest {
+    "getAllMonthlyStats still fills the range when the only entry is dated after the current month" {
         val dao = FakeCounterDao()
         val currentMonth = YearMonth.now()
         val futureMonth = currentMonth.plusMonths(3)
         dao.seed(CounterEntity(futureMonth.atDay(1).atTime(9, 0), count = 42))
 
-        val stats = StatisticsRepository(dao).getAllMonthlyStats().first()
-
-        assertEquals(4, stats.size)
-        assertEquals(0, stats[currentMonth])
-        assertEquals(0, stats[currentMonth.plusMonths(1)])
-        assertEquals(0, stats[currentMonth.plusMonths(2)])
-        assertEquals(42, stats[futureMonth])
+        StatisticsRepository(dao).getAllMonthlyStats().test {
+            val stats = awaitItem()
+            stats.size shouldBe 4
+            stats[currentMonth] shouldBe 0
+            stats[currentMonth.plusMonths(1)] shouldBe 0
+            stats[currentMonth.plusMonths(2)] shouldBe 0
+            stats[futureMonth] shouldBe 42
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
-    @Test
-    fun `getFirstEntryDate and getLastEntryDate return null when there is no data`() = runTest {
+    "getFirstEntryDate and getLastEntryDate return null when there is no data" {
         val repository = StatisticsRepository(FakeCounterDao())
 
-        assertNull(repository.getFirstEntryDate())
-        assertNull(repository.getLastEntryDate())
+        repository.getFirstEntryDate().shouldBeNull()
+        repository.getLastEntryDate().shouldBeNull()
     }
 
-    @Test
-    fun `getFirstEntryDate and getLastEntryDate return the earliest and latest dates`() = runTest {
+    "getFirstEntryDate and getLastEntryDate return the earliest and latest dates" {
         val dao = FakeCounterDao()
         dao.seed(
             CounterEntity(LocalDate.of(2025, 6, 10).atTime(9, 0), count = 1),
@@ -124,7 +127,7 @@ class StatisticsRepositoryTest {
         )
         val repository = StatisticsRepository(dao)
 
-        assertEquals(LocalDate.of(2025, 6, 10), repository.getFirstEntryDate())
-        assertEquals(LocalDate.of(2026, 1, 5), repository.getLastEntryDate())
+        repository.getFirstEntryDate() shouldBe LocalDate.of(2025, 6, 10)
+        repository.getLastEntryDate() shouldBe LocalDate.of(2026, 1, 5)
     }
-}
+})

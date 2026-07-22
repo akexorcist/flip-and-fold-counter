@@ -1,40 +1,36 @@
 package dev.akexorcist.flipfoldcounter.data.db
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Test
+import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.shouldBe
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-class DateConverterTest {
-    private val converter = DateConverter()
+class DateConverterTest : StringSpec({
+    val converter = DateConverter()
 
-    @Test
-    fun `dateToTimestamp and fromTimestamp round-trip a value`() {
+    "dateToTimestamp and fromTimestamp round-trip a value" {
         val original = LocalDateTime.of(2026, 1, 15, 9, 0, 0)
 
         val timestamp = converter.dateToTimestamp(original)
 
-        assertEquals(original.toEpochSecond(ZoneOffset.UTC), timestamp)
-        assertEquals(original, converter.fromTimestamp(timestamp))
+        timestamp shouldBe original.toEpochSecond(ZoneOffset.UTC)
+        converter.fromTimestamp(timestamp) shouldBe original
     }
 
-    @Test
-    fun `dateToTimestamp returns null for null input`() {
-        assertNull(converter.dateToTimestamp(null))
+    "dateToTimestamp returns null for null input" {
+        converter.dateToTimestamp(null).shouldBeNull()
     }
 
-    @Test
-    fun `fromTimestamp returns null for null input`() {
-        assertNull(converter.fromTimestamp(null))
+    "fromTimestamp returns null for null input" {
+        converter.fromTimestamp(null).shouldBeNull()
     }
 
-    @Test
-    fun `sub-second precision is lost through the round-trip`() {
+    "sub-second precision is lost through the round-trip" {
         val withNanos = LocalDateTime.of(2026, 1, 15, 9, 0, 0, 500_000_000)
 
         val restored = converter.fromTimestamp(converter.dateToTimestamp(withNanos))
 
-        assertEquals(withNanos.withNano(0), restored)
+        restored shouldBe withNanos.withNano(0)
     }
-}
+})

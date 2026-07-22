@@ -1,29 +1,32 @@
 package dev.akexorcist.flipfoldcounter.data
 
+import app.cash.turbine.test
 import dev.akexorcist.flipfoldcounter.data.db.CounterEntity
 import dev.akexorcist.flipfoldcounter.data.db.FakeCounterDao
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.shouldBe
 import java.time.LocalDateTime
 
-class CounterRepositoryTest {
+class CounterRepositoryTest : StringSpec({
 
-    @Test
-    fun `addCountForCurrentHour inserts a new hour bucket truncated to the top of the hour`() = runTest {
+    "addCountForCurrentHour inserts a new hour bucket truncated to the top of the hour" {
         val dao = FakeCounterDao()
         val repository = CounterRepository(dao)
 
         repository.addCountForCurrentHour()
 
         val expectedHour = LocalDateTime.now().withMinute(0).withSecond(0).withNano(0)
-        assertEquals(1, repository.observeTotalCount().first())
-        assertEquals(1, dao.getAllCountsOrdered().first().single { it.dateTime == expectedHour }.count)
+        repository.observeTotalCount().test {
+            awaitItem() shouldBe 1
+            cancelAndIgnoreRemainingEvents()
+        }
+        dao.getAllCountsOrdered().test {
+            awaitItem().single { it.dateTime == expectedHour }.count shouldBe 1
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
-    @Test
-    fun `addCountForCurrentHour increments an existing hour bucket instead of duplicating it`() = runTest {
+    "addCountForCurrentHour increments an existing hour bucket instead of duplicating it" {
         val dao = FakeCounterDao()
         val repository = CounterRepository(dao)
 
@@ -31,20 +34,27 @@ class CounterRepositoryTest {
         repository.addCountForCurrentHour()
         repository.addCountForCurrentHour()
 
-        val entities = dao.getAllCountsOrdered().first()
-        assertEquals(1, entities.size)
-        assertEquals(3, entities.single().count)
+        dao.getAllCountsOrdered().test {
+            val entities = awaitItem()
+            entities.size shouldBe 1
+            entities.single().count shouldBe 3
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
-    @Test
-    fun `observeTotalCount emits 0 when there is no data`() = runTest {
-        val repository = CounterRepository(FakeCounterDao())
+    "observeTotalCount reacts live as entries are added while collected" {
+        val dao = FakeCounterDao()
+        val repository = CounterRepository(dao)
 
-        assertEquals(0, repository.observeTotalCount().first())
+        repository.observeTotalCount().test {
+            awaitItem() shouldBe 0
+            repository.addCountForCurrentHour()
+            awaitItem() shouldBe 1
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
-    @Test
-    fun `observeTodayCount only sums entries within today`() = runTest {
+    "observeTodayCount only sums entries within today" {
         val dao = FakeCounterDao()
         val today = LocalDateTime.now().withMinute(0).withSecond(0).withNano(0)
         dao.seed(
@@ -53,11 +63,13 @@ class CounterRepositoryTest {
             CounterEntity(dateTime = today.plusDays(1), count = 100),
         )
 
-        assertEquals(5, CounterRepository(dao).observeTodayCount().first())
+        CounterRepository(dao).observeTodayCount().test {
+            awaitItem() shouldBe 5
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
-    @Test
-    fun `observeCurrentMonthCount excludes entries from adjacent months`() = runTest {
+    "observeCurrentMonthCount excludes entries from adjacent months" {
         val dao = FakeCounterDao()
         val now = LocalDateTime.now().withMinute(0).withSecond(0).withNano(0)
         dao.seed(
@@ -66,17 +78,22 @@ class CounterRepositoryTest {
             CounterEntity(dateTime = now.plusMonths(1), count = 100),
         )
 
-        assertEquals(7, CounterRepository(dao).observeCurrentMonthCount().first())
+        CounterRepository(dao).observeCurrentMonthCount().test {
+            awaitItem() shouldBe 7
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
-    @Test
-    fun `clearAll removes every entry`() = runTest {
+    "clearAll removes every entry" {
         val dao = FakeCounterDao()
         dao.seed(CounterEntity(dateTime = LocalDateTime.now(), count = 42))
         val repository = CounterRepository(dao)
 
         repository.clearAll()
 
-        assertEquals(0, repository.observeTotalCount().first())
+        repository.observeTotalCount().test {
+            awaitItem() shouldBe 0
+            cancelAndIgnoreRemainingEvents()
+        }
     }
-}
+})
