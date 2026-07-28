@@ -10,13 +10,14 @@ import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import dev.akexorcist.flipfoldcounter.data.CounterRepository
+import dev.akexorcist.flipfoldcounter.data.db.CounterDao
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.koin.core.context.GlobalContext
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import java.text.NumberFormat
 
 /**
@@ -26,16 +27,16 @@ import java.text.NumberFormat
  * should see the total count reflect the trigger.
  */
 @RunWith(AndroidJUnit4::class)
-class CounterActivityRoutineTriggerTest {
+class CounterActivityTriggerTest : KoinComponent {
 
     @get:Rule
     val composeTestRule = createEmptyComposeRule()
 
-    private val counterRepository: CounterRepository by lazy { GlobalContext.get().get() }
+    private val counterDao: CounterDao by inject()
 
     @Before
     fun clearExistingCounts() = runBlocking {
-        counterRepository.clearAll()
+        counterDao.clearAll()
     }
 
     @Test
