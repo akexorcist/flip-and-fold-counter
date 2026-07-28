@@ -27,6 +27,7 @@ jobs:
             app:
               - '**'
               - '!.github/workflows/**'
+              - '!README.md'
 
   unit-tests:
     name: Unit Tests
