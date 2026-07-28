@@ -1,16 +1,17 @@
 package dev.akexorcist.flipfoldcounter
 
 import android.content.Intent
-import androidx.compose.ui.semantics.SemanticsProperties
-import androidx.compose.ui.test.SemanticsNodeInteraction
+import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
-import androidx.compose.ui.test.onNodeWithTag
 import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import dev.akexorcist.flipfoldcounter.data.db.CounterDao
+import io.github.kakaocup.compose.node.element.ComposeScreen
+import io.github.kakaocup.compose.node.element.ComposeScreen.Companion.onComposeScreen
+import io.github.kakaocup.compose.node.element.KNode
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Rule
@@ -72,16 +73,23 @@ class CounterActivityTriggerTest : KoinComponent {
     private fun openAppAndAssertDisplayedTotalCount(expected: Int) {
         val expectedText = NumberFormat.getInstance().format(expected)
         ActivityScenario.launch(MainActivity::class.java).use {
-            composeTestRule.waitUntil(timeoutMillis = 5_000) {
-                runCatching {
-                    composeTestRule.onNodeWithTag("main_total_count", useUnmergedTree = true)
-                        .fetchSemanticsText() == expectedText
-                }.getOrDefault(false)
+            onComposeScreen<MainActivityScreen>(composeTestRule) {
+                totalCount.waitUntil(timeoutMillis = 5_000) {
+                    assertTextEquals(expectedText)
+                }
+                totalCount {
+                    assertTextEquals(expectedText)
+                }
             }
-            composeTestRule.onNodeWithTag("main_total_count", useUnmergedTree = true).assertTextEquals(expectedText)
         }
     }
+}
 
-    private fun SemanticsNodeInteraction.fetchSemanticsText(): String =
-        fetchSemanticsNode().config[SemanticsProperties.Text].joinToString(separator = "") { it.text }
+private class MainActivityScreen(semanticsProvider: SemanticsNodeInteractionsProvider) :
+    ComposeScreen<MainActivityScreen>(semanticsProvider) {
+
+    val totalCount: KNode = child {
+        hasTestTag("main_total_count")
+        useUnmergedTree = true
+    }
 }

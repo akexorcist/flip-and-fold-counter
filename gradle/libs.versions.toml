@@ -5,6 +5,7 @@ navigation3 = "1.0.0-alpha05"
 room = "2.7.2"
 koin = "4.1.0"
 kotest = "6.1.11"
+kakaoCompose = "1.0.0"
 
 [libraries]
 splashscreen = { module = "androidx.core:core-splashscreen", version = "1.2.0-rc01" }
@@ -22,6 +23,7 @@ androidx-room-testing = { module = "androidx.room:room-testing", version.ref = "
 kotest-runner-junit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 turbine = { module = "app.cash.turbine:turbine", version = "1.2.1" }
+kakao-compose = { module = "io.github.kakaocup:compose", version.ref = "kakaoCompose" }
 
 compose-bom = { module = "androidx.compose:compose-bom", version = "2025.07.00" }
 compose-ui = { module = "androidx.compose.ui:ui" }
