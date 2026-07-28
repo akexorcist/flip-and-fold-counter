@@ -23,7 +23,7 @@ import java.text.NumberFormat
 /**
  * Simulates Samsung "Modes and Routines" firing while the app isn't open: [CounterActivity] has
  * no intent-filter, so Routines starts it by explicit component name from a separate task, exactly
- * like [triggerCounterActivityLikeSamsungRoutines] does here. The user then opens the app and
+ * like [triggerCounterActivity] does here. The user then opens the app and
  * should see the total count reflect the trigger.
  */
 @RunWith(AndroidJUnit4::class)
@@ -41,20 +41,20 @@ class CounterActivityTriggerTest : KoinComponent {
 
     @Test
     fun counterActivity_launchedExternally_incrementsTotalCountByOne() {
-        triggerCounterActivityLikeSamsungRoutines()
+        triggerCounterActivity()
 
         openAppAndAssertDisplayedTotalCount(expected = 1)
     }
 
     @Test
     fun counterActivity_launchedTwiceInSameHour_incrementsByTwo() {
-        triggerCounterActivityLikeSamsungRoutines()
-        triggerCounterActivityLikeSamsungRoutines()
+        triggerCounterActivity()
+        triggerCounterActivity()
 
         openAppAndAssertDisplayedTotalCount(expected = 2)
     }
 
-    private fun triggerCounterActivityLikeSamsungRoutines() {
+    private fun triggerCounterActivity() {
         val targetPackage = InstrumentationRegistry.getInstrumentation().targetContext.packageName
         val intent = Intent().setClassName(targetPackage, CounterActivity::class.java.name)
 
