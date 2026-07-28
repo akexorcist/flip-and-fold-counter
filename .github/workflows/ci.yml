@@ -28,6 +28,10 @@ jobs:
               - '**'
               - '!.github/workflows/**'
               - '!README.md'
+              - '!image/**'
+              - '!CLAUDE.md'
+              - '!LICENSE'
+              - '!.gitignore'
 
   unit-tests:
     name: Unit Tests
